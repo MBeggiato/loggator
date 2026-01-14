@@ -3,8 +3,14 @@
 #
 # Verwendung:
 #   1. Diese Datei als docker-compose.yml speichern
-#   2. MEILISEARCH_MASTER_KEY ändern!
+#   2. Eigenen MEILISEARCH_MASTER_KEY generieren (siehe unten)
 #   3. docker-compose up -d
+#
+# Key generieren (Linux/Mac):
+#   openssl rand -base64 32
+#
+# Beispiel-Key (NICHT in Produktion verwenden!):
+#   MEILISEARCH_MASTER_KEY=aSampleMasterKey1234567890abcdef
 
 services:
   loggator:
@@ -14,7 +20,7 @@ services:
       - '3000:3000'
     environment:
       - MEILISEARCH_HOST=http://meilisearch:7700
-      - MEILISEARCH_API_KEY=${MEILISEARCH_MASTER_KEY:-CHANGE_ME_TO_A_SECURE_KEY}
+      - MEILISEARCH_API_KEY=${MEILISEARCH_MASTER_KEY:-aSampleMasterKey1234567890abcdef}
       - DOCKER_LABEL_FILTER=loggator.enable=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -32,7 +38,7 @@ services:
       - '7700:7700'
     environment:
       - MEILI_NO_ANALYTICS=true
-      - MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY:-CHANGE_ME_TO_A_SECURE_KEY}
+      - MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY:-aSampleMasterKey1234567890abcdef}
     volumes:
       - meilisearch-data:/meili_data
     healthcheck:
