@@ -190,6 +190,62 @@ export class MeilisearchIndexer {
 		}
 	}
 
+	async getLogHistogram(
+		minutes: number = 60,
+		containerName?: string
+	): Promise<Array<{ minute: string; count: number; timestamp: number }>> {
+		try {
+			const now = Date.now();
+			const fromTimestamp = now - minutes * 60 * 1000;
+
+			const filters: string[] = [`timestamp >= ${fromTimestamp}`];
+			if (containerName) {
+				filters.push(`containerName = "${containerName}"`);
+			}
+
+			const results = await this.index.search('', {
+				filter: filters.join(' AND '),
+				limit: 100000,
+				attributesToRetrieve: ['timestamp']
+			});
+
+			// Gruppiere nach Minute
+			const minuteMap = new Map<number, number>();
+
+			// Initialisiere alle Minuten mit 0
+			for (let i = 0; i < minutes; i++) {
+				const minuteTimestamp = Math.floor((now - i * 60 * 1000) / 60000) * 60000;
+				minuteMap.set(minuteTimestamp, 0);
+			}
+
+			// Zähle Logs pro Minute
+			for (const hit of results.hits) {
+				const log = hit as IndexedLog;
+				const minuteTimestamp = Math.floor(log.timestamp / 60000) * 60000;
+				const current = minuteMap.get(minuteTimestamp) || 0;
+				minuteMap.set(minuteTimestamp, current + 1);
+			}
+
+			// Sortiere nach Zeit und formatiere
+			return Array.from(minuteMap.entries())
+				.sort((a, b) => a[0] - b[0])
+				.map(([timestamp, count]) => {
+					const date = new Date(timestamp);
+					return {
+						minute: date.toLocaleTimeString('de-DE', {
+							hour: '2-digit',
+							minute: '2-digit'
+						}),
+						count,
+						timestamp
+					};
+				});
+		} catch (error) {
+			console.error('Error getting log histogram:', error);
+			return [];
+		}
+	}
+
 	async stop(): Promise<void> {
 		await this.flushBatch();
 	}

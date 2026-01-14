@@ -6,7 +6,11 @@
 		CardDescription,
 		CardContent,
 		Badge,
-		Button
+		Button,
+		Select,
+		SelectContent,
+		SelectItem,
+		SelectTrigger
 	} from '$lib/components/ui';
 	import {
 		Container,
@@ -15,8 +19,10 @@
 		AlertCircle,
 		CheckCircle2,
 		RefreshCw,
-		TrendingUp
+		TrendingUp,
+		BarChart3
 	} from 'lucide-svelte';
+	import LogHistogram from '$lib/components/LogHistogram.svelte';
 
 	interface ContainerInfo {
 		id: string;
@@ -35,9 +41,25 @@
 		logCount: number;
 	}
 
+	interface HistogramData {
+		minute: string;
+		count: number;
+		timestamp: number;
+	}
+
+	interface ContainerOption {
+		id: string;
+		name: string;
+		count: number;
+	}
+
 	let containers = $state<ContainerInfo[]>([]);
+	let containerOptions = $state<ContainerOption[]>([]);
 	let stats = $state<Stats>({ total: 0, running: 0, stopped: 0, logCount: 0 });
 	let isLoading = $state(true);
+	let histogramData = $state<HistogramData[]>([]);
+	let selectedMinutes = $state('60');
+	let selectedContainer = $state<string | undefined>(undefined);
 
 	async function loadData() {
 		isLoading = true;
@@ -61,16 +83,48 @@
 
 			if (logsRes.ok) {
 				const data = await logsRes.json();
+				containerOptions = data.containers;
 				stats.logCount = data.containers.reduce(
 					(acc: number, c: { count: number }) => acc + c.count,
 					0
 				);
 			}
+
+			await loadHistogram();
 		} catch (error) {
 			console.error('Error loading data:', error);
 		} finally {
 			isLoading = false;
 		}
+	}
+
+	async function loadHistogram() {
+		try {
+			const params = new URLSearchParams({ minutes: selectedMinutes });
+			if (selectedContainer) {
+				params.set('container', selectedContainer);
+			}
+
+			const res = await fetch(`/api/logs/histogram?${params}`);
+			if (res.ok) {
+				const data = await res.json();
+				histogramData = data.histogram;
+			}
+		} catch (error) {
+			console.error('Error loading histogram:', error);
+		}
+	}
+
+	function handleMinutesChange(value: string | undefined) {
+		if (value) {
+			selectedMinutes = value;
+			loadHistogram();
+		}
+	}
+
+	function handleContainerChange(value: string | undefined) {
+		selectedContainer = value || undefined;
+		loadHistogram();
 	}
 
 	$effect(() => {
@@ -144,6 +198,58 @@
 			</CardContent>
 		</Card>
 	</div>
+
+	<!-- Log Activity Chart -->
+	<Card>
+		<CardHeader>
+			<div class="flex items-center justify-between">
+				<div>
+					<CardTitle class="flex items-center gap-2">
+						<BarChart3 class="h-5 w-5" />
+						Log-Aktivität
+					</CardTitle>
+					<CardDescription>Anzahl der Logs pro Minute</CardDescription>
+				</div>
+				<div class="flex items-center gap-2">
+					<Select type="single" value={selectedContainer} onValueChange={handleContainerChange}>
+						<SelectTrigger class="w-[180px]">
+							{selectedContainer
+								? containerOptions.find((c) => c.name === selectedContainer)?.name
+								: 'Alle Container'}
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">Alle Container</SelectItem>
+							{#each containerOptions as container}
+								<SelectItem value={container.name}>{container.name}</SelectItem>
+							{/each}
+						</SelectContent>
+					</Select>
+					<Select type="single" value={selectedMinutes} onValueChange={handleMinutesChange}>
+						<SelectTrigger class="w-[140px]">
+							{selectedMinutes === '30'
+								? '30 Minuten'
+								: selectedMinutes === '60'
+									? '1 Stunde'
+									: selectedMinutes === '120'
+										? '2 Stunden'
+										: '6 Stunden'}
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="30">30 Minuten</SelectItem>
+							<SelectItem value="60">1 Stunde</SelectItem>
+							<SelectItem value="120">2 Stunden</SelectItem>
+							<SelectItem value="360">6 Stunden</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+			</div>
+		</CardHeader>
+		<CardContent>
+			<div class="h-[300px]">
+				<LogHistogram data={histogramData} />
+			</div>
+		</CardContent>
+	</Card>
 
 	<!-- Recent Containers -->
 	<Card>

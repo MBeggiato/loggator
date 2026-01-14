@@ -41,6 +41,7 @@
 	},
 	"dependencies": {
 		"@types/dockerode": "^4.0.0",
+		"chart.js": "^4.5.1",
 		"clsx": "^2.1.1",
 		"dockerode": "^4.0.9",
 		"lucide-svelte": "^0.562.0",
