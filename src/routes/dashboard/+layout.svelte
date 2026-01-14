@@ -11,6 +11,7 @@
 	import { Button, Separator } from '$lib/components/ui';
 	import { page } from '$app/stores';
 	import logo from '$lib/assets/logo.png';
+	import { version } from '../../../package.json';
 
 	let { children } = $props();
 
@@ -76,6 +77,17 @@
 					<span>Einklappen</span>
 				{/if}
 			</Button>
+		</div>
+
+		<!-- Version -->
+		<div class="border-t px-4 py-3 text-center">
+			<span class="text-xs text-muted-foreground">
+				{#if collapsed}
+					v{version}
+				{:else}
+					Version {version}
+				{/if}
+			</span>
 		</div>
 	</aside>
 
