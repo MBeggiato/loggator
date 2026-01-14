@@ -1,0 +1,52 @@
+# Loggator - Docker Log Aggregator
+# Beispiel docker-compose.yml für die Verwendung des fertigen Images
+#
+# Verwendung:
+#   1. Diese Datei als docker-compose.yml speichern
+#   2. MEILISEARCH_MASTER_KEY ändern!
+#   3. docker-compose up -d
+
+services:
+  loggator:
+    image: ghcr.io/mbeggiato/loggator:latest
+    container_name: loggator
+    ports:
+      - '3000:3000'
+    environment:
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=${MEILISEARCH_MASTER_KEY:-CHANGE_ME_TO_A_SECURE_KEY}
+      - DOCKER_LABEL_FILTER=loggator.enable=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - loggator-network
+
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: loggator-meilisearch
+    ports:
+      - '7700:7700'
+    environment:
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY:-CHANGE_ME_TO_A_SECURE_KEY}
+    volumes:
+      - meilisearch-data:/meili_data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7700/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - loggator-network
+
+networks:
+  loggator-network:
+    driver: bridge
+
+volumes:
+  meilisearch-data:
