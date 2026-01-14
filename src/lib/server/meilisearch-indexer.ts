@@ -160,24 +160,28 @@ export class MeilisearchIndexer {
 				attributesToRetrieve: ['containerId', 'containerName']
 			});
 
-			const containerMap = new Map<string, { name: string; count: number }>();
+			// Gruppiere nach containerName statt containerId, da Container-IDs sich bei
+			// jedem Neustart ändern können
+			const containerMap = new Map<string, { id: string; count: number }>();
 
 			for (const hit of results.hits) {
 				const log = hit as IndexedLog;
-				const existing = containerMap.get(log.containerId);
+				const existing = containerMap.get(log.containerName);
 				if (existing) {
 					existing.count++;
+					// Behalte die neueste Container-ID
+					existing.id = log.containerId;
 				} else {
-					containerMap.set(log.containerId, {
-						name: log.containerName,
+					containerMap.set(log.containerName, {
+						id: log.containerId,
 						count: 1
 					});
 				}
 			}
 
-			return Array.from(containerMap.entries()).map(([id, data]) => ({
-				id,
-				name: data.name,
+			return Array.from(containerMap.entries()).map(([name, data]) => ({
+				id: data.id,
+				name,
 				count: data.count
 			}));
 		} catch (error) {

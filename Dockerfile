@@ -19,6 +19,10 @@ RUN bun run build
 # Production stage
 FROM oven/bun:1-slim
 
+LABEL org.opencontainers.image.source="https://github.com/MBeggiato/loggator"
+LABEL org.opencontainers.image.description="Docker Log Aggregator with Meilisearch - Real-time log collection and search"
+LABEL org.opencontainers.image.licenses="MIT"
+
 WORKDIR /app
 
 # Copy built application

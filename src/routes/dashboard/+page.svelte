@@ -1,0 +1,203 @@
+<script lang="ts">
+	import {
+		Card,
+		CardHeader,
+		CardTitle,
+		CardDescription,
+		CardContent,
+		Badge,
+		Button
+	} from '$lib/components/ui';
+	import {
+		Container,
+		Activity,
+		Server,
+		AlertCircle,
+		CheckCircle2,
+		RefreshCw,
+		TrendingUp
+	} from 'lucide-svelte';
+
+	interface ContainerInfo {
+		id: string;
+		shortId: string;
+		name: string;
+		image: string;
+		state: string;
+		status: string;
+		created: number;
+	}
+
+	interface Stats {
+		total: number;
+		running: number;
+		stopped: number;
+		logCount: number;
+	}
+
+	let containers = $state<ContainerInfo[]>([]);
+	let stats = $state<Stats>({ total: 0, running: 0, stopped: 0, logCount: 0 });
+	let isLoading = $state(true);
+
+	async function loadData() {
+		isLoading = true;
+		try {
+			const [containersRes, logsRes] = await Promise.all([
+				fetch('/api/containers'),
+				fetch('/api/logs/containers')
+			]);
+
+			if (containersRes.ok) {
+				const data = await containersRes.json();
+				containers = data.containers;
+
+				stats = {
+					total: containers.length,
+					running: containers.filter((c) => c.state === 'running').length,
+					stopped: containers.filter((c) => c.state !== 'running').length,
+					logCount: 0
+				};
+			}
+
+			if (logsRes.ok) {
+				const data = await logsRes.json();
+				stats.logCount = data.containers.reduce(
+					(acc: number, c: { count: number }) => acc + c.count,
+					0
+				);
+			}
+		} catch (error) {
+			console.error('Error loading data:', error);
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	$effect(() => {
+		loadData();
+		const interval = setInterval(loadData, 30000);
+		return () => clearInterval(interval);
+	});
+
+	function formatUptime(status: string): string {
+		const match = status.match(/Up\s+(.+)/i);
+		return match ? match[1] : status;
+	}
+</script>
+
+<div class="p-6 space-y-6">
+	<!-- Header -->
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+			<p class="text-muted-foreground">Übersicht über deine Docker-Container und Logs</p>
+		</div>
+		<Button variant="outline" onclick={loadData} disabled={isLoading}>
+			<RefreshCw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
+			Aktualisieren
+		</Button>
+	</div>
+
+	<!-- Stats Cards -->
+	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+		<Card>
+			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle class="text-sm font-medium">Container gesamt</CardTitle>
+				<Container class="h-4 w-4 text-muted-foreground" />
+			</CardHeader>
+			<CardContent>
+				<div class="text-2xl font-bold">{stats.total}</div>
+				<p class="text-xs text-muted-foreground">Mit Label loggator.enable=true</p>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle class="text-sm font-medium">Aktiv</CardTitle>
+				<CheckCircle2 class="h-4 w-4 text-success" />
+			</CardHeader>
+			<CardContent>
+				<div class="text-2xl font-bold text-success">{stats.running}</div>
+				<p class="text-xs text-muted-foreground">Container laufen</p>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle class="text-sm font-medium">Gestoppt</CardTitle>
+				<AlertCircle class="h-4 w-4 text-muted-foreground" />
+			</CardHeader>
+			<CardContent>
+				<div class="text-2xl font-bold">{stats.stopped}</div>
+				<p class="text-xs text-muted-foreground">Container inaktiv</p>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle class="text-sm font-medium">Logs indiziert</CardTitle>
+				<TrendingUp class="h-4 w-4 text-muted-foreground" />
+			</CardHeader>
+			<CardContent>
+				<div class="text-2xl font-bold">{stats.logCount.toLocaleString('de-DE')}</div>
+				<p class="text-xs text-muted-foreground">Einträge in Meilisearch</p>
+			</CardContent>
+		</Card>
+	</div>
+
+	<!-- Recent Containers -->
+	<Card>
+		<CardHeader>
+			<CardTitle>Container-Status</CardTitle>
+			<CardDescription>Alle überwachten Container und ihr aktueller Status</CardDescription>
+		</CardHeader>
+		<CardContent>
+			{#if isLoading}
+				<div class="flex items-center justify-center py-8">
+					<RefreshCw class="h-6 w-6 animate-spin text-muted-foreground" />
+				</div>
+			{:else if containers.length === 0}
+				<div class="text-center py-8 text-muted-foreground">
+					<Container class="h-12 w-12 mx-auto mb-4 opacity-50" />
+					<p>
+						Keine Container mit Label <code class="text-xs">loggator.enable=true</code> gefunden
+					</p>
+				</div>
+			{:else}
+				<div class="space-y-4">
+					{#each containers.slice(0, 5) as container}
+						<div
+							class="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+						>
+							<div class="flex items-center gap-4">
+								<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+									<Server class="h-5 w-5" />
+								</div>
+								<div>
+									<div class="font-medium">{container.name}</div>
+									<div class="text-sm text-muted-foreground">{container.image}</div>
+								</div>
+							</div>
+							<div class="flex items-center gap-4">
+								<div class="text-sm text-muted-foreground text-right">
+									{formatUptime(container.status)}
+								</div>
+								<Badge variant={container.state === 'running' ? 'success' : 'secondary'}>
+									{container.state === 'running' ? 'Aktiv' : 'Gestoppt'}
+								</Badge>
+							</div>
+						</div>
+					{/each}
+
+					{#if containers.length > 5}
+						<div class="text-center pt-2">
+							<a href="/dashboard/containers" class="text-sm text-primary hover:underline">
+								Alle {containers.length} Container anzeigen →
+							</a>
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</CardContent>
+	</Card>
+</div>

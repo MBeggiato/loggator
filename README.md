@@ -23,7 +23,7 @@ Ein dockerisiertes System zur Aggregation, Indexierung und Durchsuchung von Cont
 ### 1. Repository klonen
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/MBeggiato/loggator.git
 cd loggator
 ```
 
@@ -41,6 +41,27 @@ cp .env.example .env
 ```
 
 ### 4. Mit Docker Compose starten
+
+**Option A: Image von GitHub Container Registry verwenden (empfohlen)**
+
+```yaml
+# docker-compose.yml
+services:
+  loggator:
+    image: ghcr.io/mbeggiato/loggator:latest
+    ports:
+      - '3000:3000'
+    environment:
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=your-secret-key
+      - DOCKER_LABEL_FILTER=loggator.enable=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - meilisearch
+```
+
+**Option B: Lokal bauen**
 
 ```bash
 docker-compose up -d
