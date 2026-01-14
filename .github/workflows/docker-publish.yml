@@ -35,10 +35,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
+            type=semver,pattern={{version}},suffix=-amd64
+            type=raw,value=latest-amd64
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -48,8 +46,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=amd64
+          cache-to: type=gha,mode=max,scope=amd64
 
   build-arm64:
     runs-on: ubuntu-24.04-arm
@@ -75,10 +73,9 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            suffix=-arm64
           tags: |
-            type=semver,pattern={{version}}
+            type=semver,pattern={{version}},suffix=-arm64
+            type=raw,value=latest-arm64
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -88,5 +85,62 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=arm64
+          cache-to: type=gha,mode=max,scope=arm64
+
+  # Kombiniert beide Images zu einem Multi-Arch Manifest
+  create-manifest:
+    runs-on: ubuntu-latest
+    needs: [build-amd64, build-arm64]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
+
+      - name: Create and push multi-arch manifest
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+          # Erstelle Manifest für version tag (z.B. 1.2.0)
+          docker manifest create ${IMAGE}:${VERSION} \
+            ${IMAGE}:${VERSION}-amd64 \
+            ${IMAGE}:${VERSION}-arm64
+          docker manifest push ${IMAGE}:${VERSION}
+
+          # Erstelle Manifest für latest
+          docker manifest create ${IMAGE}:latest \
+            ${IMAGE}:latest-amd64 \
+            ${IMAGE}:latest-arm64
+          docker manifest push ${IMAGE}:latest
+
+          # Major.Minor tag (z.B. 1.2)
+          MAJOR_MINOR=$(echo $VERSION | cut -d. -f1,2)
+          docker manifest create ${IMAGE}:${MAJOR_MINOR} \
+            ${IMAGE}:${VERSION}-amd64 \
+            ${IMAGE}:${VERSION}-arm64
+          docker manifest push ${IMAGE}:${MAJOR_MINOR}
+
+          # Major tag (z.B. 1)
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          docker manifest create ${IMAGE}:${MAJOR} \
+            ${IMAGE}:${VERSION}-amd64 \
+            ${IMAGE}:${VERSION}-arm64
+          docker manifest push ${IMAGE}:${MAJOR}
