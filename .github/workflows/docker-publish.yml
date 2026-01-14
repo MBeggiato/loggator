@@ -103,21 +103,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
-
       - name: Create and push multi-arch manifest
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Lowercase the image name
+          IMAGE=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
 
           # Erstelle Manifest für version tag (z.B. 1.2.0)
           docker manifest create ${IMAGE}:${VERSION} \
