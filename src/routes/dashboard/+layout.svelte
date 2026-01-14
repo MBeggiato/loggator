@@ -10,6 +10,7 @@
 	} from 'lucide-svelte';
 	import { Button, Separator } from '$lib/components/ui';
 	import { page } from '$app/stores';
+	import logo from '$lib/assets/logo.png';
 
 	let { children } = $props();
 
@@ -31,12 +32,8 @@
 			: 'w-64'}"
 	>
 		<!-- Logo -->
-		<div class="flex h-16 items-center gap-2 border-b px-4">
-			<div
-				class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
-			>
-				<Search class="h-4 w-4" />
-			</div>
+		<div class="flex h-16 items-center gap-3 border-b px-4">
+			<img src={logo} alt="Loggator Logo" class="h-10 w-10 shrink-0 rounded-lg" />
 			{#if !collapsed}
 				<span class="font-semibold text-sidebar-foreground">Loggator</span>
 			{/if}

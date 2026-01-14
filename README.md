@@ -1,6 +1,13 @@
-# Loggator - Docker Log Aggregator mit Meilisearch
+<p align="center">
+  <img src="src/lib/assets/logo.png" alt="Loggator Logo" width="120" />
+</p>
 
-Ein dockerisiertes System zur Aggregation, Indexierung und Durchsuchung von Container-Logs.
+<h1 align="center">Loggator</h1>
+
+<p align="center">
+  <strong>Docker Log Aggregator mit Meilisearch</strong><br>
+  Ein dockerisiertes System zur Aggregation, Indexierung und Durchsuchung von Container-Logs.
+</p>
 
 ## Features
 
