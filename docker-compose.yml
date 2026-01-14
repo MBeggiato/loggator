@@ -1,0 +1,59 @@
+services:
+  loggator:
+    build: .
+    container_name: loggator
+    ports:
+      - '3000:3000'
+    environment:
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=${MEILISEARCH_API_KEY:-bLwLpwgIW6VQTBrt7ZhUw9MiJXYh8Vat7YVr4lU-5XA}
+      - DOCKER_LABEL_FILTER=loggator.enable=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - loggator-network
+
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: loggator-meilisearch
+    ports:
+      - '7700:7700'
+    environment:
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY:-bLwLpwgIW6VQTBrt7ZhUw9MiJXYh8Vat7YVr4lU-5XA}
+    volumes:
+      - ./meilisearch-data:/meili_data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7700/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - loggator-network
+
+  test-logger:
+    image: alpine:latest
+    labels:
+      - 'loggator.enable=true'
+    command: >
+      sh -c "while true; do
+        echo '[INFO] Application started';
+        sleep 2;
+        echo '[DEBUG] Processing task';
+        sleep 3;
+        echo '[WARN] Memory usage high';
+        sleep 2;
+        echo '[ERROR] Connection timeout';
+        sleep 4;
+      done"
+    networks:
+      - loggator-network
+
+networks:
+  loggator-network:
+    driver: bridge

@@ -1,0 +1,38 @@
+# Loggator Docker Ignore
+
+# Dependencies
+
+node_modules
+
+# Search data
+
+meilisearch-data
+
+# Build outputs
+
+.svelte-kit
+build
+dist
+.output
+
+# Development
+
+.env
+.env.local
+.env.\*.local
+
+# IDE
+
+.vscode
+.idea
+_.swp
+_.swo
+
+# Testing
+
+coverage
+
+# Misc
+
+.DS_Store
+\*.log
