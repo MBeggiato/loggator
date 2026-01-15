@@ -14,6 +14,7 @@
 	} from '$lib/components/ui';
 	import { Activity, Pause, Play, Trash2, Filter, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import { t, formatDate } from '$lib/i18n';
 
 	interface LogHit {
 		id: string;
@@ -71,8 +72,8 @@
 		} catch (error) {
 			// Only show error toast once to avoid spam during auto-refresh
 			if (!hasShownError) {
-				toast.error('Logs konnten nicht geladen werden', {
-					description: error instanceof Error ? error.message : 'Unbekannter Fehler'
+				toast.error($t.live.couldNotLoad, {
+					description: error instanceof Error ? error.message : $t.common.unknownError
 				});
 				hasShownError = true;
 			}
@@ -83,8 +84,7 @@
 	}
 
 	function formatTimestamp(timestamp: number): string {
-		const date = new Date(timestamp);
-		return date.toLocaleString('de-DE', {
+		return formatDate(timestamp, {
 			hour: '2-digit',
 			minute: '2-digit',
 			second: '2-digit',
@@ -128,23 +128,23 @@
 				<Activity
 					class="h-8 w-8 {!isPaused ? 'text-success animate-pulse' : 'text-muted-foreground'}"
 				/>
-				Live-Logs
+				{$t.live.title}
 			</h1>
-			<p class="text-muted-foreground">Echtzeit-Log-Stream aller überwachten Container</p>
+			<p class="text-muted-foreground">{$t.live.subtitle}</p>
 		</div>
 		<div class="flex items-center gap-2">
 			<Button variant={isPaused ? 'default' : 'outline'} onclick={togglePause}>
 				{#if isPaused}
 					<Play class="h-4 w-4" />
-					Fortsetzen
+					{$t.live.resume}
 				{:else}
 					<Pause class="h-4 w-4" />
-					Pausieren
+					{$t.live.pause}
 				{/if}
 			</Button>
 			<Button variant="outline" onclick={clearLogs}>
 				<Trash2 class="h-4 w-4" />
-				Leeren
+				{$t.live.clear}
 			</Button>
 		</div>
 	</div>
@@ -155,7 +155,7 @@
 			<div class="flex flex-wrap items-center gap-4">
 				<div class="flex items-center gap-2">
 					<Filter class="h-4 w-4 text-muted-foreground" />
-					<span class="text-sm text-muted-foreground">Filter:</span>
+					<span class="text-sm text-muted-foreground">{$t.common.filter}:</span>
 				</div>
 
 				<Select
@@ -167,7 +167,7 @@
 						{#if selectedContainer}
 							{selectedContainer}
 						{:else}
-							<span class="text-muted-foreground">Alle Container</span>
+							<span class="text-muted-foreground">{$t.search.allContainers}</span>
 						{/if}
 					</SelectTrigger>
 					<SelectContent>
@@ -182,7 +182,7 @@
 						{#if selectedStream}
 							{selectedStream}
 						{:else}
-							<span class="text-muted-foreground">Alle Streams</span>
+							<span class="text-muted-foreground">{$t.search.allStreams}</span>
 						{/if}
 					</SelectTrigger>
 					<SelectContent>
@@ -194,17 +194,17 @@
 				<div class="ml-auto flex items-center gap-4">
 					<label class="flex items-center gap-2 text-sm">
 						<input type="checkbox" bind:checked={autoScroll} class="rounded" />
-						Auto-Scroll
+						{$t.live.autoScroll}
 					</label>
 					{#if !isPaused}
 						<Badge variant="success" class="animate-pulse">
 							<Activity class="h-3 w-3 mr-1" />
-							Live
+							{$t.live.live}
 						</Badge>
 					{:else}
 						<Badge variant="secondary">
 							<Pause class="h-3 w-3 mr-1" />
-							Pausiert
+							{$t.live.paused}
 						</Badge>
 					{/if}
 				</div>
@@ -216,8 +216,8 @@
 	<Card class="flex-1 min-h-0 flex flex-col">
 		<CardHeader class="shrink-0 pb-2">
 			<CardTitle class="text-sm font-medium flex items-center justify-between">
-				<span>Log-Ausgabe</span>
-				<span class="text-muted-foreground font-normal">{logs.length} Einträge</span>
+				<span>{$t.live.logOutput}</span>
+				<span class="text-muted-foreground font-normal">{logs.length} {$t.common.entries}</span>
 			</CardTitle>
 		</CardHeader>
 		<CardContent class="flex-1 min-h-0 p-0">
@@ -227,7 +227,7 @@
 						{#if isLoading}
 							<RefreshCw class="h-6 w-6 animate-spin" />
 						{:else}
-							<span>Warte auf Logs...</span>
+							<span>{$t.live.waitingForLogs}</span>
 						{/if}
 					</div>
 				{:else}

@@ -10,6 +10,7 @@
 	} from '$lib/components/ui';
 	import { Container, Play, Square, RefreshCw, Server, Clock, Box } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import { t, formatDate as formatDateI18n } from '$lib/i18n';
 
 	interface ContainerInfo {
 		id: string;
@@ -35,8 +36,8 @@
 			containers = data.containers;
 		} catch (error) {
 			console.error('Error loading containers:', error);
-			toast.error('Fehler beim Laden der Container', {
-				description: error instanceof Error ? error.message : 'Unbekannter Fehler'
+			toast.error($t.containers.errorLoading, {
+				description: error instanceof Error ? error.message : $t.common.unknownError
 			});
 		} finally {
 			isLoading = false;
@@ -54,13 +55,13 @@
 				throw new Error(data.error || 'Failed to start container');
 			}
 
-			toast.success('Container gestartet', {
-				description: `${name} wurde erfolgreich gestartet`
+			toast.success($t.containers.containerStarted, {
+				description: `${name} ${$t.containers.containerStartedDesc}`
 			});
 			await loadContainers();
 		} catch (error) {
-			toast.error('Fehler beim Starten', {
-				description: error instanceof Error ? error.message : 'Unbekannter Fehler'
+			toast.error($t.containers.errorStarting, {
+				description: error instanceof Error ? error.message : $t.common.unknownError
 			});
 		} finally {
 			actionLoading = null;
@@ -78,13 +79,13 @@
 				throw new Error(data.error || 'Failed to stop container');
 			}
 
-			toast.success('Container gestoppt', {
-				description: `${name} wurde erfolgreich gestoppt`
+			toast.success($t.containers.containerStopped, {
+				description: `${name} ${$t.containers.containerStoppedDesc}`
 			});
 			await loadContainers();
 		} catch (error) {
-			toast.error('Fehler beim Stoppen', {
-				description: error instanceof Error ? error.message : 'Unbekannter Fehler'
+			toast.error($t.containers.errorStopping, {
+				description: error instanceof Error ? error.message : $t.common.unknownError
 			});
 		} finally {
 			actionLoading = null;
@@ -92,7 +93,7 @@
 	}
 
 	function formatDate(timestamp: number): string {
-		return new Date(timestamp * 1000).toLocaleDateString('de-DE', {
+		return formatDateI18n(timestamp * 1000, {
 			day: '2-digit',
 			month: '2-digit',
 			year: 'numeric',
@@ -112,12 +113,12 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Container</h1>
-			<p class="text-muted-foreground">Verwalte deine überwachten Docker-Container</p>
+			<h1 class="text-3xl font-bold tracking-tight">{$t.containers.title}</h1>
+			<p class="text-muted-foreground">{$t.containers.subtitle}</p>
 		</div>
 		<Button variant="outline" onclick={loadContainers} disabled={isLoading}>
 			<RefreshCw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-			Aktualisieren
+			{$t.common.refresh}
 		</Button>
 	</div>
 
@@ -131,7 +132,7 @@
 					</div>
 					<div>
 						<p class="text-2xl font-bold">{containers.length}</p>
-						<p class="text-sm text-muted-foreground">Container gesamt</p>
+						<p class="text-sm text-muted-foreground">{$t.dashboard.totalContainers}</p>
 					</div>
 				</div>
 			</CardContent>
@@ -146,7 +147,7 @@
 						<p class="text-2xl font-bold text-success">
 							{containers.filter((c) => c.state === 'running').length}
 						</p>
-						<p class="text-sm text-muted-foreground">Aktiv</p>
+						<p class="text-sm text-muted-foreground">{$t.dashboard.active}</p>
 					</div>
 				</div>
 			</CardContent>
@@ -161,7 +162,7 @@
 						<p class="text-2xl font-bold">
 							{containers.filter((c) => c.state !== 'running').length}
 						</p>
-						<p class="text-sm text-muted-foreground">Gestoppt</p>
+						<p class="text-sm text-muted-foreground">{$t.dashboard.stopped}</p>
 					</div>
 				</div>
 			</CardContent>
@@ -171,11 +172,10 @@
 	<!-- Container List -->
 	<Card>
 		<CardHeader>
-			<CardTitle>Container-Liste</CardTitle>
+			<CardTitle>{$t.containers.containerList}</CardTitle>
 			<CardDescription>
-				Alle Container mit dem Label <code class="text-xs bg-secondary px-1 py-0.5 rounded"
-					>loggator.enable=true</code
-				>
+				{$t.containers.containerListDesc}
+				<code class="text-xs bg-secondary px-1 py-0.5 rounded">loggator.enable=true</code>
 			</CardDescription>
 		</CardHeader>
 		<CardContent>
@@ -186,11 +186,11 @@
 			{:else if containers.length === 0}
 				<div class="text-center py-12 text-muted-foreground">
 					<Container class="h-12 w-12 mx-auto mb-4 opacity-50" />
-					<p class="text-lg font-medium">Keine Container gefunden</p>
+					<p class="text-lg font-medium">{$t.containers.noContainersFound}</p>
 					<p class="text-sm">
-						Füge deinen Containern das Label <code class="text-xs bg-secondary px-1 py-0.5 rounded"
-							>loggator.enable=true</code
-						> hinzu
+						{$t.containers.addLabelHint}
+						<code class="text-xs bg-secondary px-1 py-0.5 rounded">loggator.enable=true</code>
+						{$t.containers.addLabelHintSuffix}
 					</p>
 				</div>
 			{:else}
@@ -216,7 +216,7 @@
 									<div class="flex items-center gap-2">
 										<span class="font-semibold truncate">{container.name}</span>
 										<Badge variant={container.state === 'running' ? 'success' : 'secondary'}>
-											{container.state === 'running' ? 'Aktiv' : 'Gestoppt'}
+											{container.state === 'running' ? $t.dashboard.active : $t.dashboard.stopped}
 										</Badge>
 									</div>
 									<div
@@ -250,7 +250,7 @@
 										{:else}
 											<Square class="h-4 w-4" />
 										{/if}
-										Stoppen
+										{$t.containers.stop}
 									</Button>
 								{:else}
 									<Button
@@ -264,14 +264,14 @@
 										{:else}
 											<Play class="h-4 w-4" />
 										{/if}
-										Starten
+										{$t.containers.start}
 									</Button>
 								{/if}
 								<a
 									href="/dashboard/search?container={container.name}"
 									class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 px-3"
 								>
-									Logs anzeigen
+									{$t.containers.viewLogs}
 								</a>
 							</div>
 						</div>

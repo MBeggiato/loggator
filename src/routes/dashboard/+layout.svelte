@@ -8,12 +8,24 @@
 		ChevronRight,
 		Github,
 		Info,
-		ExternalLink
+		ExternalLink,
+		Languages
 	} from 'lucide-svelte';
-	import { Button, Separator, Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui';
+	import {
+		Button,
+		Separator,
+		Tooltip,
+		TooltipContent,
+		TooltipTrigger,
+		DropdownMenu,
+		DropdownMenuContent,
+		DropdownMenuItem,
+		DropdownMenuTrigger
+	} from '$lib/components/ui';
 	import { page } from '$app/stores';
 	import logo from '$lib/assets/logo.png';
 	import { version } from '../../../package.json';
+	import { t, locale, availableLocales, type Locale } from '$lib/i18n';
 
 	let { children } = $props();
 
@@ -23,16 +35,16 @@
 		latestVersion && latestVersion !== version && compareVersions(latestVersion, version) > 0
 	);
 
+	// Navigation items with translation keys
 	const navItems = [
-		{ href: '/dashboard', label: 'Übersicht', icon: LayoutDashboard },
-		{ href: '/dashboard/containers', label: 'Container', icon: Container },
-		{ href: '/dashboard/search', label: 'Log-Suche', icon: Search },
-		{ href: '/dashboard/live', label: 'Live-Logs', icon: Activity }
+		{ href: '/dashboard', labelKey: 'overview' as const, icon: LayoutDashboard },
+		{ href: '/dashboard/containers', labelKey: 'containers' as const, icon: Container },
+		{ href: '/dashboard/search', labelKey: 'logSearch' as const, icon: Search },
+		{ href: '/dashboard/live', labelKey: 'liveLogs' as const, icon: Activity }
 	];
 
 	const GITHUB_REPO = 'https://github.com/MBeggiato/loggator';
 
-	// Vergleicht zwei Versionen (z.B. "1.2.3" vs "1.2.4")
 	function compareVersions(a: string, b: string): number {
 		const partsA = a.replace(/^v/, '').split('.').map(Number);
 		const partsB = b.replace(/^v/, '').split('.').map(Number);
@@ -46,7 +58,6 @@
 		return 0;
 	}
 
-	// Prüft GitHub auf neueste Version
 	async function checkForUpdates() {
 		try {
 			const res = await fetch('https://api.github.com/repos/MBeggiato/loggator/releases/latest');
@@ -59,9 +70,12 @@
 		}
 	}
 
+	function setLocale(newLocale: Locale) {
+		locale.set(newLocale);
+	}
+
 	$effect(() => {
 		checkForUpdates();
-		// Prüfe alle 30 Minuten auf Updates
 		const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
 		return () => clearInterval(interval);
 	});
@@ -86,17 +100,18 @@
 		<nav class="flex-1 space-y-1 p-2">
 			{#each navItems as item}
 				{@const isActive = $page.url.pathname === item.href}
+				{@const label = $t.nav[item.labelKey]}
 				<a
 					href={item.href}
 					class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors
 						{isActive
 						? 'bg-sidebar-accent text-sidebar-accent-foreground'
 						: 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'}"
-					title={collapsed ? item.label : undefined}
+					title={collapsed ? label : undefined}
 				>
 					<item.icon class="h-4 w-4 shrink-0" />
 					{#if !collapsed}
-						<span>{item.label}</span>
+						<span>{label}</span>
 					{/if}
 				</a>
 			{/each}
@@ -116,14 +131,14 @@
 					<ChevronRight class="h-4 w-4" />
 				{:else}
 					<ChevronLeft class="h-4 w-4" />
-					<span>Einklappen</span>
+					<span>{$t.nav.collapse}</span>
 				{/if}
 			</Button>
 		</div>
 
-		<!-- Footer: Version & GitHub -->
+		<!-- Footer: Version, Language & GitHub -->
 		<div class="border-t px-3 py-3 space-y-2">
-			<!-- Version mit Update-Hinweis -->
+			<!-- Version with Update indicator -->
 			<div class="flex items-center justify-center gap-2">
 				{#if collapsed}
 					{#if updateAvailable}
@@ -139,14 +154,14 @@
 								</a>
 							</TooltipTrigger>
 							<TooltipContent side="right">
-								<p>Update verfügbar: v{latestVersion}</p>
+								<p>{$t.common.updateAvailable}: v{latestVersion}</p>
 							</TooltipContent>
 						</Tooltip>
 					{:else}
 						<span class="text-xs text-muted-foreground">v{version}</span>
 					{/if}
 				{:else}
-					<span class="text-xs text-muted-foreground">Version {version}</span>
+					<span class="text-xs text-muted-foreground">{$t.common.version} {version}</span>
 					{#if updateAvailable}
 						<Tooltip>
 							<TooltipTrigger>
@@ -160,12 +175,45 @@
 								</a>
 							</TooltipTrigger>
 							<TooltipContent>
-								<p>Update verfügbar: v{latestVersion}</p>
+								<p>{$t.common.updateAvailable}: v{latestVersion}</p>
 							</TooltipContent>
 						</Tooltip>
 					{/if}
 				{/if}
 			</div>
+
+			<!-- Language Selector -->
+			<DropdownMenu>
+				<DropdownMenuTrigger>
+					{#snippet child({ props })}
+						<Button
+							{...props}
+							variant="ghost"
+							size={collapsed ? 'icon' : 'sm'}
+							class="w-full justify-center gap-2"
+						>
+							<Languages class="h-4 w-4" />
+							{#if !collapsed}
+								<span class="text-xs"
+									>{availableLocales.find((l) => l.code === $locale)?.flag}
+									{availableLocales.find((l) => l.code === $locale)?.name}</span
+								>
+							{/if}
+						</Button>
+					{/snippet}
+				</DropdownMenuTrigger>
+				<DropdownMenuContent side={collapsed ? 'right' : 'top'} align="center">
+					{#each availableLocales as loc}
+						<DropdownMenuItem
+							onclick={() => setLocale(loc.code)}
+							class="gap-2 {$locale === loc.code ? 'bg-accent' : ''}"
+						>
+							<span>{loc.flag}</span>
+							<span>{loc.name}</span>
+						</DropdownMenuItem>
+					{/each}
+				</DropdownMenuContent>
+			</DropdownMenu>
 
 			<!-- GitHub Link -->
 			<a

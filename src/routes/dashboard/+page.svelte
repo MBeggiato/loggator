@@ -23,6 +23,7 @@
 		BarChart3
 	} from 'lucide-svelte';
 	import LogHistogram from '$lib/components/LogHistogram.svelte';
+	import { t, formatNumber } from '$lib/i18n';
 
 	interface ContainerInfo {
 		id: string;
@@ -143,12 +144,12 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-			<p class="text-muted-foreground">Übersicht über deine Docker-Container und Logs</p>
+			<h1 class="text-3xl font-bold tracking-tight">{$t.dashboard.title}</h1>
+			<p class="text-muted-foreground">{$t.dashboard.subtitle}</p>
 		</div>
 		<Button variant="outline" onclick={loadData} disabled={isLoading}>
 			<RefreshCw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-			Aktualisieren
+			{$t.common.refresh}
 		</Button>
 	</div>
 
@@ -156,45 +157,53 @@
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 		<Card>
 			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium">Container gesamt</CardTitle>
-				<Container class="h-4 w-4 text-muted-foreground" />
+				<CardTitle class="text-sm font-medium">{$t.dashboard.totalContainers}</CardTitle>
+				<div class="p-2 bg-primary/10 rounded-lg">
+					<Container class="h-4 w-4 text-primary" />
+				</div>
 			</CardHeader>
 			<CardContent>
 				<div class="text-2xl font-bold">{stats.total}</div>
-				<p class="text-xs text-muted-foreground">Mit Label loggator.enable=true</p>
+				<p class="text-xs text-muted-foreground">{$t.dashboard.totalContainersDesc}</p>
 			</CardContent>
 		</Card>
 
 		<Card>
 			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium">Aktiv</CardTitle>
-				<CheckCircle2 class="h-4 w-4 text-success" />
+				<CardTitle class="text-sm font-medium">{$t.dashboard.active}</CardTitle>
+				<div class="p-2 bg-green-500/10 rounded-lg">
+					<CheckCircle2 class="h-4 w-4 text-green-500" />
+				</div>
 			</CardHeader>
 			<CardContent>
-				<div class="text-2xl font-bold text-success">{stats.running}</div>
-				<p class="text-xs text-muted-foreground">Container laufen</p>
+				<div class="text-2xl font-bold text-green-500">{stats.running}</div>
+				<p class="text-xs text-muted-foreground">{$t.dashboard.activeDesc}</p>
 			</CardContent>
 		</Card>
 
 		<Card>
 			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium">Gestoppt</CardTitle>
-				<AlertCircle class="h-4 w-4 text-muted-foreground" />
+				<CardTitle class="text-sm font-medium">{$t.dashboard.stopped}</CardTitle>
+				<div class="p-2 bg-amber-500/10 rounded-lg">
+					<AlertCircle class="h-4 w-4 text-amber-500" />
+				</div>
 			</CardHeader>
 			<CardContent>
 				<div class="text-2xl font-bold">{stats.stopped}</div>
-				<p class="text-xs text-muted-foreground">Container inaktiv</p>
+				<p class="text-xs text-muted-foreground">{$t.dashboard.stoppedDesc}</p>
 			</CardContent>
 		</Card>
 
 		<Card>
 			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium">Logs indiziert</CardTitle>
-				<TrendingUp class="h-4 w-4 text-muted-foreground" />
+				<CardTitle class="text-sm font-medium">{$t.dashboard.logsIndexed}</CardTitle>
+				<div class="p-2 bg-blue-500/10 rounded-lg">
+					<BarChart3 class="h-4 w-4 text-blue-500" />
+				</div>
 			</CardHeader>
 			<CardContent>
-				<div class="text-2xl font-bold">{stats.logCount.toLocaleString('de-DE')}</div>
-				<p class="text-xs text-muted-foreground">Einträge in Meilisearch</p>
+				<div class="text-2xl font-bold text-blue-500">{formatNumber(stats.logCount)}</div>
+				<p class="text-xs text-muted-foreground">{$t.dashboard.logsIndexedDesc}</p>
 			</CardContent>
 		</Card>
 	</div>
@@ -206,19 +215,19 @@
 				<div>
 					<CardTitle class="flex items-center gap-2">
 						<BarChart3 class="h-5 w-5" />
-						Log-Aktivität
+						{$t.dashboard.logActivity}
 					</CardTitle>
-					<CardDescription>Anzahl der Logs pro Minute</CardDescription>
+					<CardDescription>{$t.dashboard.logActivityDesc}</CardDescription>
 				</div>
 				<div class="flex items-center gap-2">
 					<Select type="single" value={selectedContainer} onValueChange={handleContainerChange}>
 						<SelectTrigger class="w-[180px]">
 							{selectedContainer
 								? containerOptions.find((c) => c.name === selectedContainer)?.name
-								: 'Alle Container'}
+								: $t.dashboard.allContainers}
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">Alle Container</SelectItem>
+							<SelectItem value="">{$t.dashboard.allContainers}</SelectItem>
 							{#each containerOptions as container}
 								<SelectItem value={container.name}>{container.name}</SelectItem>
 							{/each}
@@ -227,18 +236,18 @@
 					<Select type="single" value={selectedMinutes} onValueChange={handleMinutesChange}>
 						<SelectTrigger class="w-[140px]">
 							{selectedMinutes === '30'
-								? '30 Minuten'
+								? $t.dashboard.minutes30
 								: selectedMinutes === '60'
-									? '1 Stunde'
+									? $t.dashboard.hour1
 									: selectedMinutes === '120'
-										? '2 Stunden'
-										: '6 Stunden'}
+										? $t.dashboard.hours2
+										: $t.dashboard.hours6}
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="30">30 Minuten</SelectItem>
-							<SelectItem value="60">1 Stunde</SelectItem>
-							<SelectItem value="120">2 Stunden</SelectItem>
-							<SelectItem value="360">6 Stunden</SelectItem>
+							<SelectItem value="30">{$t.dashboard.minutes30}</SelectItem>
+							<SelectItem value="60">{$t.dashboard.hour1}</SelectItem>
+							<SelectItem value="120">{$t.dashboard.hours2}</SelectItem>
+							<SelectItem value="360">{$t.dashboard.hours6}</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -254,8 +263,8 @@
 	<!-- Recent Containers -->
 	<Card>
 		<CardHeader>
-			<CardTitle>Container-Status</CardTitle>
-			<CardDescription>Alle überwachten Container und ihr aktueller Status</CardDescription>
+			<CardTitle>{$t.dashboard.containerStatus}</CardTitle>
+			<CardDescription>{$t.dashboard.containerStatusDesc}</CardDescription>
 		</CardHeader>
 		<CardContent>
 			{#if isLoading}
@@ -266,30 +275,47 @@
 				<div class="text-center py-8 text-muted-foreground">
 					<Container class="h-12 w-12 mx-auto mb-4 opacity-50" />
 					<p>
-						Keine Container mit Label <code class="text-xs">loggator.enable=true</code> gefunden
+						{$t.dashboard.noContainersFound} <code class="text-xs">loggator.enable=true</code>
+						{$t.dashboard.noContainersFoundSuffix}
 					</p>
 				</div>
 			{:else}
 				<div class="space-y-4">
 					{#each containers.slice(0, 5) as container}
+						{@const containerLogs = containerOptions.find((c) => c.id === container.id)}
 						<div
 							class="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
 						>
-							<div class="flex items-center gap-4">
-								<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-									<Server class="h-5 w-5" />
+							<div class="flex items-center gap-4 flex-1">
+								<div
+									class="flex h-10 w-10 items-center justify-center rounded-lg {container.state ===
+									'running'
+										? 'bg-green-500/10'
+										: 'bg-secondary'}"
+								>
+									<Server
+										class="h-5 w-5 {container.state === 'running'
+											? 'text-green-500'
+											: 'text-muted-foreground'}"
+									/>
 								</div>
-								<div>
-									<div class="font-medium">{container.name}</div>
-									<div class="text-sm text-muted-foreground">{container.image}</div>
+								<div class="flex-1 min-w-0">
+									<div class="font-medium truncate">{container.name}</div>
+									<div class="text-sm text-muted-foreground truncate">{container.image}</div>
 								</div>
 							</div>
-							<div class="flex items-center gap-4">
-								<div class="text-sm text-muted-foreground text-right">
+							<div class="flex items-center gap-3">
+								{#if containerLogs}
+									<div class="text-right">
+										<div class="text-xs text-muted-foreground">{$t.dashboard.logs}</div>
+										<div class="text-sm font-medium">{formatNumber(containerLogs.count)}</div>
+									</div>
+								{/if}
+								<div class="text-sm text-muted-foreground text-right min-w-[100px]">
 									{formatUptime(container.status)}
 								</div>
 								<Badge variant={container.state === 'running' ? 'success' : 'secondary'}>
-									{container.state === 'running' ? 'Aktiv' : 'Gestoppt'}
+									{container.state === 'running' ? $t.dashboard.active : $t.dashboard.stopped}
 								</Badge>
 							</div>
 						</div>
@@ -298,7 +324,7 @@
 					{#if containers.length > 5}
 						<div class="text-center pt-2">
 							<a href="/dashboard/containers" class="text-sm text-primary hover:underline">
-								Alle {containers.length} Container anzeigen →
+								{$t.dashboard.viewLogs} ({containers.length}) →
 							</a>
 						</div>
 					{/if}

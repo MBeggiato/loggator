@@ -16,6 +16,7 @@
 	import { Search, Filter, RefreshCw, X } from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
+	import { t, formatDate, formatNumber } from '$lib/i18n';
 
 	interface LogHit {
 		id: string;
@@ -80,8 +81,8 @@
 			totalResults = data.total;
 			processingTime = data.processingTimeMs;
 		} catch (error) {
-			const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
-			toast.error('Suche fehlgeschlagen', {
+			const message = error instanceof Error ? error.message : $t.common.unknownError;
+			toast.error($t.search.searchFailed, {
 				description: message
 			});
 			console.error('Search error:', error);
@@ -91,8 +92,7 @@
 	}
 
 	function formatTimestamp(timestamp: number): string {
-		const date = new Date(timestamp);
-		return date.toLocaleString('de-DE', {
+		return formatDate(timestamp, {
 			day: '2-digit',
 			month: '2-digit',
 			year: 'numeric',
@@ -135,8 +135,8 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Log-Suche</h1>
-			<p class="text-muted-foreground">Durchsuche alle Container-Logs mit Volltextsuche</p>
+			<h1 class="text-3xl font-bold tracking-tight">{$t.search.title}</h1>
+			<p class="text-muted-foreground">{$t.search.subtitle}</p>
 		</div>
 	</div>
 
@@ -145,9 +145,9 @@
 		<CardHeader>
 			<CardTitle class="flex items-center gap-2">
 				<Search class="h-5 w-5" />
-				Suchfilter
+				{$t.search.searchFilters}
 			</CardTitle>
-			<CardDescription>Suche nach Logs mit verschiedenen Filteroptionen</CardDescription>
+			<CardDescription>{$t.search.searchFiltersDesc}</CardDescription>
 		</CardHeader>
 		<CardContent class="space-y-4">
 			<!-- Search Input -->
@@ -157,7 +157,7 @@
 					<Input
 						type="text"
 						bind:value={searchQuery}
-						placeholder="Suche in Logs..."
+						placeholder={$t.search.searchPlaceholder}
 						class="pl-10"
 						onkeydown={handleKeyDown}
 					/>
@@ -168,7 +168,7 @@
 					{:else}
 						<Search class="h-4 w-4" />
 					{/if}
-					Suchen
+					{$t.common.search}
 				</Button>
 			</div>
 
@@ -181,7 +181,7 @@
 							{#if selectedContainer}
 								{containers.find((c) => c.name === selectedContainer)?.name ?? selectedContainer}
 							{:else}
-								<span class="text-muted-foreground">Alle Container</span>
+								<span class="text-muted-foreground">{$t.search.allContainers}</span>
 							{/if}
 						</SelectTrigger>
 						<SelectContent>
@@ -199,7 +199,7 @@
 						{#if selectedStream}
 							{selectedStream}
 						{:else}
-							<span class="text-muted-foreground">Alle Streams</span>
+							<span class="text-muted-foreground">{$t.search.allStreams}</span>
 						{/if}
 					</SelectTrigger>
 					<SelectContent>
@@ -211,12 +211,12 @@
 				{#if searchQuery || selectedContainer || selectedStream}
 					<Button variant="ghost" size="sm" onclick={clearFilters}>
 						<X class="h-4 w-4" />
-						Filter zurücksetzen
+						{$t.search.clearFilters}
 					</Button>
 				{/if}
 
 				<div class="ml-auto flex items-center gap-4 text-sm text-muted-foreground">
-					<span>{totalResults.toLocaleString('de-DE')} Ergebnisse</span>
+					<span>{formatNumber(totalResults)} {$t.common.results}</span>
 					<span>•</span>
 					<span>{processingTime}ms</span>
 				</div>
@@ -227,12 +227,15 @@
 	<!-- Results Card -->
 	<Card>
 		<CardHeader>
-			<CardTitle>Suchergebnisse</CardTitle>
+			<CardTitle>{$t.search.searchResults}</CardTitle>
 			<CardDescription>
 				{#if logs.length > 0}
-					{logs.length} von {totalResults.toLocaleString('de-DE')} Einträgen angezeigt
+					{logs.length}
+					{$t.search.showingResults}
+					{formatNumber(totalResults)}
+					{$t.search.entriesShown}
 				{:else}
-					Keine Logs gefunden
+					{$t.search.noLogsFound}
 				{/if}
 			</CardDescription>
 		</CardHeader>
@@ -244,11 +247,11 @@
 			{:else if logs.length === 0}
 				<div class="text-center py-12 text-muted-foreground">
 					<Search class="h-12 w-12 mx-auto mb-4 opacity-50" />
-					<p class="text-lg font-medium">Keine Logs gefunden</p>
+					<p class="text-lg font-medium">{$t.search.noLogsFound}</p>
 					<p class="text-sm">
-						Container mit Label <code class="text-xs bg-secondary px-1 py-0.5 rounded"
-							>loggator.enable=true</code
-						> werden überwacht
+						{$t.search.containerLabel}
+						<code class="text-xs bg-secondary px-1 py-0.5 rounded">loggator.enable=true</code>
+						{$t.search.monitored}
 					</p>
 				</div>
 			{:else}
