@@ -190,6 +190,16 @@ export class MeilisearchIndexer {
 		}
 	}
 
+	async getTotalLogCount(): Promise<number> {
+		try {
+			const stats = await this.index.getStats();
+			return stats.numberOfDocuments;
+		} catch (error) {
+			console.error('Error getting total log count:', error);
+			return 0;
+		}
+	}
+
 	async getLogHistogram(
 		minutes: number = 60,
 		containerName?: string

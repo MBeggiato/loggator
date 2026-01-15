@@ -11,8 +11,11 @@ export const GET: RequestHandler = async () => {
 	}
 
 	try {
-		const containers = await indexer.getContainerList();
-		return json({ containers });
+		const [containers, totalCount] = await Promise.all([
+			indexer.getContainerList(),
+			indexer.getTotalLogCount()
+		]);
+		return json({ containers, totalCount });
 	} catch (error) {
 		console.error('Error getting containers:', error);
 		return json({ error: 'Failed to get containers', message: String(error) }, { status: 500 });

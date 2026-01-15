@@ -84,10 +84,10 @@
 			if (logsRes.ok) {
 				const data = await logsRes.json();
 				containerOptions = data.containers;
-				stats.logCount = data.containers.reduce(
-					(acc: number, c: { count: number }) => acc + c.count,
-					0
-				);
+				// Verwende die echte Gesamtanzahl aus Meilisearch Stats
+				stats.logCount =
+					data.totalCount ??
+					data.containers.reduce((acc: number, c: { count: number }) => acc + c.count, 0);
 			}
 
 			await loadHistogram();
