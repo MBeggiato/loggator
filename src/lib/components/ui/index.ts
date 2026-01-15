@@ -53,3 +53,6 @@ export {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
 } from './dropdown-menu';
+
+// Tooltip
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
