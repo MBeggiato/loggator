@@ -5,8 +5,8 @@
 <h1 align="center">Loggator</h1>
 
 <p align="center">
-  <strong>Docker Log Aggregator powered by Meilisearch</strong><br>
-  Collect, index, and search container logs with a modern web UI.
+  <strong>Docker Log Aggregator with AI-Search, powered by Meilisearch and OpenRouter</strong><br>
+  Collect, index, and search container logs with a modern web UI and a AI assistant.
 </p>
 
 <p align="center">
