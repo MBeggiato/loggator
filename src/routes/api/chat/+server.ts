@@ -4,10 +4,15 @@ import { tools, executeToolCall } from '$lib/server/ai-tools';
 import { error, json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
+// Validate required environment variables
+if (!env.OPENROUTER_API_KEY) {
+	throw new Error('OPENROUTER_API_KEY environment variable is required');
+}
+
 // OpenRouter via OpenAI SDK (vollständig kompatibel)
 const openai = new OpenAI({
 	baseURL: 'https://openrouter.ai/api/v1',
-	apiKey: env.OPENROUTER_API_KEY || '',
+	apiKey: env.OPENROUTER_API_KEY,
 	defaultHeaders: {
 		'HTTP-Referer': 'http://loggator.local',
 		'X-Title': 'Loggator.io'
