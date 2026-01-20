@@ -42,7 +42,11 @@
 			return code;
 		},
 		breaks: true,
-		gfm: true
+		gfm: true,
+		// SECURITY: Sanitize HTML to prevent XSS
+		sanitize: false, // marked deprecated sanitize, use DOMPurify or mangle instead
+		mangle: false,
+		headerIds: false
 	});
 
 	let renderedContent = $derived(

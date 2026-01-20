@@ -9,6 +9,29 @@ const meilisearchClient = new MeiliSearch({
 
 const docker = new Dockerode({ socketPath: '/var/run/docker.sock' });
 
+// Label-Filter für Security (nur überwachte Container)
+const LABEL_FILTER = env.DOCKER_LABEL_FILTER || 'loggator.enable=true';
+
+/**
+ * Prüft ob ein Container das erforderliche Label hat
+ * SECURITY: Dies verhindert, dass die KI auf nicht-überwachte Container zugreifen kann
+ */
+function hasRequiredLabel(labels: Record<string, string> | undefined): boolean {
+	if (!labels) return false;
+	const [key, value] = LABEL_FILTER.split('=');
+	return labels[key] === value;
+}
+
+/**
+ * Filtert Container nach dem erforderlichen Label
+ * SECURITY: Gibt nur Container zurück, die auch überwacht werden
+ */
+function filterMonitoredContainers(
+	containers: Dockerode.ContainerInfo[]
+): Dockerode.ContainerInfo[] {
+	return containers.filter((c) => hasRequiredLabel(c.Labels));
+}
+
 // Tool Definitionen für OpenRouter
 export const tools = [
 	{
@@ -48,7 +71,7 @@ export const tools = [
 		function: {
 			name: 'get_container_info',
 			description:
-				'Liefert aktuelle Informationen zu einem spezifischen Container (Status, Image, Uptime, Ports, etc.)',
+				'Liefert aktuelle Informationen zu einem überwachten Container (Status, Image, Uptime, Ports, etc.). Nur Container mit loggator.enable=true Label sind verfügbar.',
 			parameters: {
 				type: 'object',
 				properties: {
@@ -87,7 +110,8 @@ export const tools = [
 		type: 'function' as const,
 		function: {
 			name: 'list_containers',
-			description: 'Listet alle verfügbaren Container mit Status auf',
+			description:
+				'Listet alle überwachten Container (mit loggator.enable=true Label) mit Status auf',
 			parameters: {
 				type: 'object',
 				properties: {
@@ -114,16 +138,16 @@ export async function searchLogs(params: SearchLogsParams) {
 		const filters: string[] = [];
 
 		if (params.container) {
-			filters.push(`containerName = "${params.container}"`);
+			// SECURITY: Escape quotes to prevent filter injection
+			const escapedContainer = params.container.replace(/"/g, '\\"');
+			filters.push(`containerName = "${escapedContainer}"`);
 		}
 
 		if (params.stream) {
-			filters.push(`stream = "${params.stream}"`);
-		}
-
-		const index = meilisearchClient.index('logs');
-		const limit = Math.min(params.limit || 50, 100);
-
+			// Only allow known values
+			if (params.stream === 'stdout' || params.stream === 'stderr') {
+				filters.push(`stream = "${params.stream}"`);
+			}
 		const results = await index.search(params.query, {
 			filter: filters.length > 0 ? filters.join(' AND ') : undefined,
 			limit,
@@ -159,7 +183,11 @@ interface ContainerInfoParams {
 export async function getContainerInfo(params: ContainerInfoParams) {
 	try {
 		const containers = await docker.listContainers({ all: true });
-		const containerInfo = containers.find(
+
+		// SECURITY: Nur überwachte Container durchsuchen
+		const monitoredContainers = filterMonitoredContainers(containers);
+
+		const containerInfo = monitoredContainers.find(
 			(c) =>
 				c.Names.some((name) => name.replace(/^\//, '') === params.containerName) ||
 				c.Id.startsWith(params.containerName)
@@ -168,12 +196,20 @@ export async function getContainerInfo(params: ContainerInfoParams) {
 		if (!containerInfo) {
 			return {
 				success: false,
-				error: `Container '${params.containerName}' nicht gefunden`
+				error: `Container '${params.containerName}' nicht gefunden oder wird nicht überwacht`
 			};
 		}
 
 		const container = docker.getContainer(containerInfo.Id);
 		const inspect = await container.inspect();
+
+		// SECURITY: Nochmal prüfen ob Container das Label hat
+		if (!hasRequiredLabel(inspect.Config.Labels)) {
+			return {
+				success: false,
+				error: `Container '${params.containerName}' wird nicht überwacht`
+			};
+		}
 
 		return {
 			success: true,
@@ -271,10 +307,13 @@ export async function listContainers(params: ListContainersParams = {}) {
 	try {
 		const containers = await docker.listContainers({ all: params.all || false });
 
+		// SECURITY: Nur überwachte Container zurückgeben
+		const monitoredContainers = filterMonitoredContainers(containers);
+
 		return {
 			success: true,
-			total: containers.length,
-			containers: containers.map((c) => ({
+			total: monitoredContainers.length,
+			containers: monitoredContainers.map((c) => ({
 				id: c.Id.substring(0, 12),
 				name: c.Names[0]?.replace(/^\//, '') || 'unknown',
 				image: c.Image,

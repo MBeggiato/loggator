@@ -16,8 +16,14 @@ export const GET: RequestHandler = async ({ url }) => {
 	const stream = (url.searchParams.get('stream') as 'stdout' | 'stderr') || undefined;
 	const from = url.searchParams.get('from') ? parseInt(url.searchParams.get('from')!) : undefined;
 	const to = url.searchParams.get('to') ? parseInt(url.searchParams.get('to')!) : undefined;
-	const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : 100;
-	const offset = url.searchParams.get('offset') ? parseInt(url.searchParams.get('offset')!) : 0;
+
+	// SECURITY: Validate and limit parameters
+	const limitParam = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : 100;
+	const limit = Math.max(1, Math.min(limitParam, 1000)); // Limit between 1-1000
+	const offsetParam = url.searchParams.get('offset')
+		? parseInt(url.searchParams.get('offset')!)
+		: 0;
+	const offset = Math.max(0, Math.min(offsetParam, 100000)); // Max offset 100k
 
 	try {
 		const results = await indexer.search(query, {
