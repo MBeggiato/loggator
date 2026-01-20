@@ -23,47 +23,71 @@
 
 ## Quick Start
 
-```yaml
-# docker-compose.yml
-services:
-  loggator:
-    image: ghcr.io/mbeggiato/loggator:latest
-    ports:
-      - '3000:3000'
-    environment:
-      - MEILISEARCH_HOST=http://meilisearch:7700
-      - MEILISEARCH_API_KEY=your-secret-key
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    depends_on:
-      - meilisearch
-
-  meilisearch:
-    image: getmeili/meilisearch:v1.6
-    environment:
-      - MEILI_MASTER_KEY=your-secret-key
-    volumes:
-      - meilisearch-data:/meili_data
-
-volumes:
-  meilisearch-data:
-```
+### 1. Download the example configuration
 
 ```bash
-docker-compose up -d
+# Download docker-compose.example.yml
+curl -O https://raw.githubusercontent.com/MBeggiato/loggator/main/docker-compose.example.yml
+
+# Rename to docker-compose.yml
+mv docker-compose.example.yml docker-compose.yml
+```
+
+### 2. Generate a secure Meilisearch key
+
+```bash
+# Linux/Mac
+openssl rand -base64 32
+
+# Or use this example key (NOT for production!)
+# bLwLpwgIW6VQTBrt7ZhUw9MiJXYh8Vat7YVr4lU-5XA
+```
+
+### 3. Update docker-compose.yml
+
+Replace `aSampleMasterKey1234567890abcdef` with your generated key in **both** places:
+
+- `MEILI_MASTER_KEY` (Meilisearch service)
+- `MEILISEARCH_API_KEY` (Loggator service)
+
+**Important:** Both values must be identical!
+
+### 4. Configure AI Chat Assistant
+
+Get your free API key from [OpenRouter](https://openrouter.ai/keys) and create a `.env` file:
+
+```bash
+# .env
+OPENROUTER_API_KEY=sk-or-v1-...  # Your OpenRouter API key
+AI_MODEL=xiaomi/mimo-v2-flash:free
+SITE_URL=http://localhost:3000
+```
+
+### 5. Start Loggator
+
+```bash
+docker compose up -d
+
 # Open http://localhost:3000
 ```
 
-### Enable logging for containers
+### 6. Enable logging for your containers
 
-Add label to containers you want to monitor:
+Add the label to containers you want to monitor:
 
 ```yaml
 services:
   my-app:
-    image: my-app
+    image: my-app:latest
     labels:
-      - 'loggator.enable=true'
+      - 'loggator.enable=true' # Enable log collection
+    # ... rest of your config
+```
+
+Then restart the container:
+
+```bash
+docker compose restart my-app
 ```
 
 ## Features
