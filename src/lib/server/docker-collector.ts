@@ -50,6 +50,11 @@ export class DockerLogCollector {
 	}
 
 	private async checkAndMonitorContainer(containerId: string): Promise<void> {
+		if (!containerId) {
+			console.warn('checkAndMonitorContainer called with empty/undefined containerId');
+			return;
+		}
+
 		try {
 			const container = this.docker.getContainer(containerId);
 			const info = await container.inspect();
@@ -199,10 +204,16 @@ export class DockerLogCollector {
 							const event = JSON.parse(line);
 
 							if (event.Type === 'container') {
+								const containerId = event.Actor?.ID || event.id;
+								if (!containerId) {
+									console.warn('Docker event without container ID:', event);
+									continue;
+								}
+
 								if (event.Action === 'start') {
-									await this.checkAndMonitorContainer(event.id);
+									await this.checkAndMonitorContainer(containerId);
 								} else if (event.Action === 'die' || event.Action === 'stop') {
-									this.stopMonitoring(event.id);
+									this.stopMonitoring(containerId);
 								}
 							}
 						} catch (parseError) {

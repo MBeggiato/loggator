@@ -6,6 +6,19 @@
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 
+	// Polyfill for crypto.randomUUID (older browsers)
+	function generateUUID(): string {
+		if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+			return crypto.randomUUID();
+		}
+		// Fallback for older browsers
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+			const r = (Math.random() * 16) | 0;
+			const v = c === 'x' ? r : (r & 0x3) | 0x8;
+			return v.toString(16);
+		});
+	}
+
 	interface Props {
 		onClose: () => void;
 	}
@@ -72,7 +85,7 @@
 		if (!input.trim() || isLoading) return;
 
 		const userMessage: Message = {
-			id: crypto.randomUUID(),
+			id: generateUUID(),
 			role: 'user',
 			content: input,
 			timestamp: new Date()
@@ -113,7 +126,7 @@
 			messages = [
 				...messages,
 				{
-					id: crypto.randomUUID(),
+					id: generateUUID(),
 					role: 'assistant',
 					content: data.message,
 					timestamp: new Date(),
