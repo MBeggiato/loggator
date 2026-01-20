@@ -148,6 +148,11 @@ export async function searchLogs(params: SearchLogsParams) {
 			if (params.stream === 'stdout' || params.stream === 'stderr') {
 				filters.push(`stream = "${params.stream}"`);
 			}
+		}
+
+		const index = meilisearchClient.index('logs');
+		const limit = Math.min(params.limit || 50, 100);
+
 		const results = await index.search(params.query, {
 			filter: filters.length > 0 ? filters.join(' AND ') : undefined,
 			limit,
