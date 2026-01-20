@@ -4,13 +4,19 @@
 # Verwendung:
 #   1. Diese Datei als docker-compose.yml speichern
 #   2. Eigenen MEILISEARCH_MASTER_KEY generieren (siehe unten)
-#   3. docker-compose up -d
+#   3. Optional: .env Datei mit OPENROUTER_API_KEY anlegen für AI-Chat
+#   4. docker-compose up -d
 #
 # Key generieren (Linux/Mac):
 #   openssl rand -base64 32
 #
 # Beispiel-Key (NICHT in Produktion verwenden!):
 #   MEILISEARCH_MASTER_KEY=aSampleMasterKey1234567890abcdef
+#
+# AI Chat (optional):
+#   OPENROUTER_API_KEY=sk-or-v1-...
+#   AI_MODEL=xiaomi/mimo-v2-flash:free
+#   SITE_URL=https://your-domain.com
 
 services:
   loggator:
@@ -22,6 +28,10 @@ services:
       - MEILISEARCH_HOST=http://meilisearch:7700
       - MEILISEARCH_API_KEY=${MEILISEARCH_MASTER_KEY:-aSampleMasterKey1234567890abcdef}
       - DOCKER_LABEL_FILTER=loggator.enable=true
+      # AI Chat (optional - nur setzen wenn AI-Features genutzt werden)
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - AI_MODEL=${AI_MODEL:-xiaomi/mimo-v2-flash:free}
+      - SITE_URL=${SITE_URL:-http://localhost:3000}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
