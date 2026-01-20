@@ -17,6 +17,8 @@
   <a href="#development">Development</a>
 </p>
 
+![Loggator Dashboard](.github/screenshots/screen.png)
+
 ---
 
 ## Quick Start
