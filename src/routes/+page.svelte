@@ -23,6 +23,7 @@
 		BarChart3
 	} from 'lucide-svelte';
 	import LogHistogram from '$lib/components/LogHistogram.svelte';
+	import ChatBubble from '$lib/components/ChatBubble.svelte';
 	import { t, formatNumber } from '$lib/i18n';
 
 	interface ContainerInfo {
@@ -333,3 +334,6 @@
 		</CardContent>
 	</Card>
 </div>
+
+<!-- KI Chat Bubble -->
+<ChatBubble />

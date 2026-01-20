@@ -1,28 +1,7 @@
 services:
-  loggator:
-    build: .
-    container_name: loggator
-    ports:
-      - '3000:3000'
-    environment:
-      - MEILISEARCH_HOST=http://meilisearch:7700
-      - MEILISEARCH_API_KEY=${MEILISEARCH_API_KEY:-bLwLpwgIW6VQTBrt7ZhUw9MiJXYh8Vat7YVr4lU-5XA}
-      - DOCKER_LABEL_FILTER=loggator.enable=true
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - AI_MODEL=${AI_MODEL:-xiaomi/mimo-v2-flash:free}
-      - SITE_URL=${SITE_URL:-http://localhost:3000}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    depends_on:
-      meilisearch:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - loggator-network
-
   meilisearch:
     image: getmeili/meilisearch:latest
-    container_name: loggator-meilisearch
+    container_name: loggator-meilisearch-dev
     ports:
       - '7700:7700'
     environment:
@@ -36,11 +15,10 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    networks:
-      - loggator-network
 
   test-logger:
     image: alpine:latest
+    container_name: loggator-test-logger-dev
     labels:
       - 'loggator.enable=true'
     command: >
@@ -54,9 +32,3 @@ services:
         echo '[ERROR] Connection timeout';
         sleep 4;
       done"
-    networks:
-      - loggator-network
-
-networks:
-  loggator-network:
-    driver: bridge

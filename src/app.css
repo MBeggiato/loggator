@@ -138,3 +138,210 @@
 	--color-warning: var(--warning);
 	--color-warning-foreground: var(--warning-foreground);
 }
+
+/* Markdown Content Styles for Chat */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+	font-weight: 600;
+	margin-top: 1rem;
+	margin-bottom: 0.5rem;
+}
+
+.markdown-content h1 {
+	font-size: 1.125rem;
+}
+
+.markdown-content h2 {
+	font-size: 1rem;
+}
+
+.markdown-content h3 {
+	font-size: 0.875rem;
+}
+
+.markdown-content p {
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+	margin-left: 1rem;
+}
+
+.markdown-content li {
+	margin-top: 0.25rem;
+	margin-bottom: 0.25rem;
+}
+
+.markdown-content code {
+	padding: 0.125rem 0.375rem;
+	border-radius: 0.25rem;
+	background-color: rgba(255, 255, 255, 0.15);
+	font-size: 0.875rem;
+	font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+	color: var(--foreground);
+}
+
+.dark .markdown-content code {
+	background-color: rgba(255, 255, 255, 0.15);
+}
+
+.markdown-content pre {
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+	padding: 0.75rem;
+	border-radius: 0.5rem;
+	background-color: rgba(0, 0, 0, 0.05);
+	overflow-x: auto;
+}
+
+.dark .markdown-content pre {
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.markdown-content pre code {
+	padding: 0;
+	background-color: transparent;
+}
+
+.markdown-content table {
+	width: 100%;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	font-size: 0.85rem;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 0.5rem;
+	overflow: hidden;
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.dark .markdown-content table {
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.markdown-content thead {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background-color: rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(10px);
+}
+
+.markdown-content th {
+	padding: 0.75rem 0.875rem;
+	text-align: left;
+	font-weight: 700;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--foreground);
+	border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+	white-space: nowrap;
+	background-color: inherit;
+}
+
+.markdown-content tbody {
+	display: table-row-group;
+}
+
+.markdown-content tr {
+	display: table-row;
+}
+
+.markdown-content td {
+	padding: 0.75rem 0.875rem;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+	vertical-align: middle;
+	color: var(--foreground);
+	white-space: nowrap;
+}
+
+.markdown-content tbody tr:first-child td {
+	border-top: none;
+}
+
+.markdown-content tbody tr {
+	transition: background-color 0.15s ease;
+}
+
+.markdown-content tbody tr:hover {
+	background-color: rgba(255, 255, 255, 0.12);
+	cursor: default;
+}
+
+.dark .markdown-content tbody tr:hover {
+	background-color: rgba(255, 255, 255, 0.12);
+}
+
+.markdown-content strong {
+	font-weight: 600;
+}
+
+.markdown-content em {
+	font-style: italic;
+}
+
+.markdown-content blockquote {
+	border-left-width: 4px;
+	border-color: var(--primary);
+	opacity: 0.3;
+	padding-left: 1rem;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+	font-style: italic;
+}
+
+/* Syntax Highlighting */
+.markdown-content .hljs-keyword {
+	color: rgb(168, 85, 247);
+}
+
+.markdown-content .hljs-string {
+	color: rgb(34, 197, 94);
+}
+
+.markdown-content .hljs-number {
+	color: rgb(249, 115, 22);
+}
+
+.markdown-content .hljs-comment {
+	color: rgb(107, 114, 128);
+	font-style: italic;
+}
+
+.markdown-content .hljs-function {
+	color: rgb(59, 130, 246);
+}
+
+/* Status indicators in tables */
+.markdown-content td:has(strong) {
+	font-weight: 500;
+}
+
+/* Scrollbar styling for tables */
+.markdown-content table::-webkit-scrollbar {
+	height: 8px;
+}
+
+.markdown-content table::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.markdown-content table::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
+}
+
+.markdown-content table::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.4);
+}

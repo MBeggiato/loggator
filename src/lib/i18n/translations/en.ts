@@ -112,6 +112,26 @@ export default {
 		couldNotLoad: 'Could not load logs'
 	},
 
+	// AI Chat
+	chat: {
+		title: 'AI Log Assistant',
+		subtitle: 'Ask questions about your container logs',
+		inputPlaceholder: 'Ask something about your logs...',
+		send: 'Send',
+		thinking: 'AI is analyzing...',
+		emptyState: 'Ask a question about your container logs',
+		suggestion1: 'Show me all errors from the last hour',
+		suggestion2: 'Which containers are currently running?',
+		suggestion3: 'What happened to the nginx container?',
+		clearHistory: 'Clear history',
+		clearConfirm: 'Really clear chat history?',
+		historyCleared: 'Chat history cleared',
+		error: 'Error sending message',
+		networkError: 'Network error. Please try again.',
+		openChat: 'Open AI assistant',
+		closeChat: 'Close chat'
+	},
+
 	// Toasts & Notifications
 	toast: {
 		success: 'Success',

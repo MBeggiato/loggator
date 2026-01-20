@@ -1,5 +1,6 @@
 import { DockerLogCollector } from './docker-collector';
 import { MeilisearchIndexer } from './meilisearch-indexer';
+import { env } from '$env/dynamic/private';
 
 export class LogAggregatorService {
 	private collector: DockerLogCollector | null = null;
@@ -16,14 +17,14 @@ export class LogAggregatorService {
 
 		try {
 			// Meilisearch Indexer initialisieren
-			const meilisearchHost = process.env.MEILISEARCH_HOST || 'http://meilisearch:7700';
-			const meilisearchKey = process.env.MEILISEARCH_API_KEY || '';
+			const meilisearchHost = env.MEILISEARCH_HOST || 'http://localhost:7700';
+			const meilisearchKey = env.MEILISEARCH_API_KEY || '';
 
 			this.indexer = new MeilisearchIndexer(meilisearchHost, meilisearchKey);
 			await this.indexer.initialize();
 
 			// Docker Log Collector initialisieren
-			const labelFilter = process.env.DOCKER_LABEL_FILTER || 'loggator.enable=true';
+			const labelFilter = env.DOCKER_LABEL_FILTER || 'loggator.enable=true';
 			this.collector = new DockerLogCollector(labelFilter, async (log) => {
 				if (this.indexer) {
 					await this.indexer.indexLog(log);

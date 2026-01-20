@@ -25,13 +25,13 @@
 	} from '$lib/components/ui';
 	import { page } from '$app/stores';
 	import logo from '$lib/assets/logo.png';
-	import { version } from '../../package.json';
 	import { t, locale, availableLocales, type Locale } from '$lib/i18n';
 	import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();
 
 	let collapsed = $state(false);
+	let version = $state('1.2.0');
 	let latestVersion = $state<string | null>(null);
 	let updateAvailable = $derived(
 		latestVersion && latestVersion !== version && compareVersions(latestVersion, version) > 0
@@ -62,10 +62,16 @@
 
 	async function checkForUpdates() {
 		try {
-			const res = await fetch('https://api.github.com/repos/MBeggiato/loggator/releases/latest');
+			const res = await fetch('https://api.github.com/repos/MBeggiato/loggator/tags');
 			if (res.ok) {
-				const data = await res.json();
-				latestVersion = data.tag_name?.replace(/^v/, '') || null;
+				const tags = await res.json();
+				if (tags && tags.length > 0) {
+					// Nimm den ersten Tag (neuester)
+					const latestTag = tags[0].name;
+					latestVersion = latestTag.replace(/^v/, '');
+				}
+			} else if (res.status === 404) {
+				console.debug('No GitHub tags found');
 			}
 		} catch (error) {
 			console.error('Failed to check for updates:', error);
@@ -77,6 +83,13 @@
 	}
 
 	$effect(() => {
+		// Lade aktuelle Version
+		fetch('/api/version')
+			.then((res) => res.json())
+			.then((data) => (version = data.version))
+			.catch(() => console.debug('Failed to load version'));
+
+		// Prüfe auf Updates
 		checkForUpdates();
 		const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
 		return () => clearInterval(interval);
@@ -154,7 +167,7 @@
 							<Tooltip>
 								<TooltipTrigger>
 									<a
-										href="{GITHUB_REPO}/releases/latest"
+										href="{GITHUB_REPO}/tags"
 										target="_blank"
 										rel="noopener noreferrer"
 										class="flex items-center text-amber-500 hover:text-amber-400 transition-colors"
@@ -175,7 +188,7 @@
 							<Tooltip>
 								<TooltipTrigger>
 									<a
-										href="{GITHUB_REPO}/releases/latest"
+										href="{GITHUB_REPO}/tags"
 										target="_blank"
 										rel="noopener noreferrer"
 										class="flex items-center text-amber-500 hover:text-amber-400 transition-colors"

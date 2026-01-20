@@ -5,6 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"dev:services": "docker compose -f docker-compose.dev.yml up -d",
+		"dev:full": "bun run dev:services && bun run dev",
+		"dev:stop": "docker compose -f docker-compose.dev.yml down",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
@@ -44,8 +47,11 @@
 		"chart.js": "^4.5.1",
 		"clsx": "^2.1.1",
 		"dockerode": "^4.0.9",
+		"highlight.js": "^11.11.1",
 		"lucide-svelte": "^0.562.0",
+		"marked": "^17.0.1",
 		"meilisearch": "^0.55.0",
+		"openai": "^6.16.0",
 		"svelte-sonner": "^1.0.7",
 		"tailwind-merge": "^3.4.0",
 		"tailwind-variants": "^3.2.2"

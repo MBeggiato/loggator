@@ -112,6 +112,26 @@ export default {
 		couldNotLoad: 'Logs konnten nicht geladen werden'
 	},
 
+	// AI Chat
+	chat: {
+		title: 'KI Log-Assistent',
+		subtitle: 'Stellen Sie Fragen zu Ihren Container-Logs',
+		inputPlaceholder: 'Fragen Sie etwas über Ihre Logs...',
+		send: 'Senden',
+		thinking: 'KI analysiert...',
+		emptyState: 'Stellen Sie eine Frage zu Ihren Container-Logs',
+		suggestion1: 'Zeige mir alle Fehler der letzten Stunde',
+		suggestion2: 'Welche Container laufen gerade?',
+		suggestion3: 'Was ist mit dem nginx Container passiert?',
+		clearHistory: 'Verlauf löschen',
+		clearConfirm: 'Chat-Verlauf wirklich löschen?',
+		historyCleared: 'Chat-Verlauf gelöscht',
+		error: 'Fehler beim Senden der Nachricht',
+		networkError: 'Netzwerkfehler. Bitte versuchen Sie es erneut.',
+		openChat: 'KI-Assistent öffnen',
+		closeChat: 'Chat schließen'
+	},
+
 	// Toasts & Notifications
 	toast: {
 		success: 'Erfolg',
