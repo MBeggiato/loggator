@@ -1,0 +1,148 @@
+ Image loggator-loggator Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 550B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.17kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/oven/bun:1
+#3 ...
+
+#4 [internal] load metadata for docker.io/oven/bun:1-slim
+#4 DONE 0.9s
+
+#3 [internal] load metadata for docker.io/oven/bun:1
+#3 DONE 0.9s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 365B done
+#5 DONE 0.0s
+
+#6 [builder 1/7] FROM docker.io/oven/bun:1@sha256:f20d9cf365ab35529384f1717687c739c92e6f39157a35a95ef06f4049a10e4a
+#6 DONE 0.0s
+
+#7 [stage-1 1/6] FROM docker.io/oven/bun:1-slim@sha256:9d20d1b535596c4a021ba2087d2d303c4098e96be15f47775729cf7a259bb41e
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 149.22kB 0.0s done
+#8 DONE 0.1s
+
+#9 [builder 4/7] COPY bun.lock* ./
+#9 CACHED
+
+#10 [builder 2/7] WORKDIR /app
+#10 CACHED
+
+#11 [builder 3/7] COPY package.json ./
+#11 CACHED
+
+#12 [builder 5/7] RUN bun install --frozen-lockfile
+#12 CACHED
+
+#13 [builder 6/7] COPY . .
+#13 DONE 0.4s
+
+#14 [builder 7/7] RUN bun run build
+#14 0.264 $ vite build
+#14 0.503 ▲ [WARNING] Cannot find base config file "./.svelte-kit/tsconfig.json" [tsconfig.json]
+#14 0.503 
+#14 0.503     tsconfig.json:2:12:
+#14 0.503       2 │   "extends": "./.svelte-kit/tsconfig.json",
+#14 0.503         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#14 0.503 
+#14 1.358 `config.kit.csrf.checkOrigin` has been deprecated in favour of `csrf.trustedOrigins`. It will be removed in a future version
+#14 1.418 vite v7.3.1 building ssr environment for production...
+#14 1.435 transforming...
+#14 1.630 [33m9:50:43 AM [vite-plugin-svelte] src/routes/notifications/+page.svelte:235:6 A form label must be associated with a control
+#14 1.630 https://svelte.dev/e/a11y_label_has_associated_control[39m
+#14 1.630 233:         <form onsubmit={(e) => { e.preventDefault(); saveChannel(); }} class="space-y-4">
+#14 1.630 234:           <div>
+#14 1.630 235:             <label class="block text-sm font-medium mb-1">Name</label>
+#14 1.630                                                                            ^
+#14 1.630 236:             <Input 
+#14 1.630 237:               bind:value={formData.name} 
+#14 1.630 [33m9:50:43 AM [vite-plugin-svelte] src/routes/notifications/+page.svelte:244:6 A form label must be associated with a control
+#14 1.630 https://svelte.dev/e/a11y_label_has_associated_control[39m
+#14 1.630 242: 
+#14 1.630 243:           <div>
+#14 1.630 244:             <label class="block text-sm font-medium mb-1">Apprise URL</label>
+#14 1.630                                                                                   ^
+#14 1.630 245:             <Input 
+#14 1.630 246:               bind:value={formData.url} 
+#14 1.630 [33m9:50:43 AM [vite-plugin-svelte] src/routes/notifications/+page.svelte:256:6 A form label must be associated with a control
+#14 1.630 https://svelte.dev/e/a11y_label_has_associated_control[39m
+#14 1.630 254: 
+#14 1.630 255:           <div>
+#14 1.630 256:             <label class="block text-sm font-medium mb-1">
+#14 1.630                          ^
+#14 1.630 257:               Container Filter (optional)
+#14 1.630 258:             </label>
+#14 1.630 [33m9:50:43 AM [vite-plugin-svelte] src/routes/notifications/+page.svelte:269:6 A form label must be associated with a control
+#14 1.630 https://svelte.dev/e/a11y_label_has_associated_control[39m
+#14 1.630 267: 
+#14 1.630 268:           <div>
+#14 1.630 269:             <label class="block text-sm font-medium mb-1">Mindest-Severity</label>
+#14 1.630                                                                                        ^
+#14 1.630 270:             <select 
+#14 1.630 271:               bind:value={formData.minSeverity}
+#14 6.279 ✓ 3819 modules transformed.
+#14 6.281 ✗ Build failed in 4.86s
+#14 6.282 error during build:
+#14 6.282 [vite:esbuild] Transform failed with 1 error:
+#14 6.282 /app/src/routes/api/notifications/channels/+server.ts:128:9: ERROR: Expected ";" but found ":"
+#14 6.282 file: /app/src/routes/api/notifications/channels/+server.ts:128:9
+#14 6.282 
+#14 6.282 Expected ";" but found ":"
+#14 6.282 126 |  };
+#14 6.282 127 |  				success: false,
+#14 6.282 128 |  				error: error instanceof Error ? error.message : 'Unknown error'
+#14 6.282     |           ^
+#14 6.282 129 |  			},
+#14 6.282 130 |  			{ status: 500 }
+#14 6.282 
+#14 6.282     at failureErrorWithLog (/app/node_modules/esbuild/lib/main.js:1467:19)
+#14 6.282     at <anonymous> (/app/node_modules/esbuild/lib/main.js:736:50)
+#14 6.282     at <anonymous> (/app/node_modules/esbuild/lib/main.js:603:9)
+#14 6.282     at handleIncomingPacket (/app/node_modules/esbuild/lib/main.js:658:12)
+#14 6.282     at readFromStdout (/app/node_modules/esbuild/lib/main.js:581:7)
+#14 6.282     at emit (node:events:95:22)
+#14 6.282     at addChunk (internal:streams/readable:265:47)
+#14 6.282     at readableAddChunkPushByteMode (internal:streams/readable:243:18)
+#14 6.282     at handleArrayBufferViewResult (internal:streams/native-readable:79:16)
+#14 6.282     at <anonymous> (internal:streams/native-readable:43:68)
+#14 6.365 error: script "build" exited with code 1
+#14 ERROR: process "/bin/sh -c bun run build" did not complete successfully: exit code: 1
+------
+ > [builder 7/7] RUN bun run build:
+6.282     at <anonymous> (/app/node_modules/esbuild/lib/main.js:736:50)
+6.282     at <anonymous> (/app/node_modules/esbuild/lib/main.js:603:9)
+6.282     at handleIncomingPacket (/app/node_modules/esbuild/lib/main.js:658:12)
+6.282     at readFromStdout (/app/node_modules/esbuild/lib/main.js:581:7)
+6.282     at emit (node:events:95:22)
+6.282     at addChunk (internal:streams/readable:265:47)
+6.282     at readableAddChunkPushByteMode (internal:streams/readable:243:18)
+6.282     at handleArrayBufferViewResult (internal:streams/native-readable:79:16)
+6.282     at <anonymous> (internal:streams/native-readable:43:68)
+6.365 error: script "build" exited with code 1
+------
+Dockerfile:17
+
+--------------------
+
+  15 |     
+
+  16 |     # Build the application
+
+  17 | >>> RUN bun run build
+
+  18 |     
+
+  19 |     # Production stage
+
+--------------------
+
+failed to solve: process "/bin/sh -c bun run build" did not complete successfully: exit code: 1
+

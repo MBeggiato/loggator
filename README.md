@@ -97,7 +97,12 @@ docker compose restart my-app
   - Automatic tool calling for log search, container info, and health checks
   - Chat history persistence across sessions
   - Markdown responses with syntax highlighting
-- 🔍 **Full-text search** - Fast log search powered by Meilisearch
+- � **Error Notifications** - Get notified when errors occur in your containers
+  - AI-generated summaries of problems with recommendations
+  - Support for Email, Slack, Discord, Telegram, MS Teams, and custom Webhooks
+  - Configurable filters by severity, container, and error count
+  - Smart cooldown to prevent notification spam
+- �🔍 **Full-text search** - Fast log search powered by Meilisearch
 - 📊 **Real-time dashboard** - Live log streaming and statistics
 - 🐳 **Label-based filtering** - Only monitor containers you choose
 - 🌐 **Multi-language UI** - English and German support
@@ -177,6 +182,24 @@ GET /api/status
 
 ```bash
 GET /api/version
+```
+
+### Notifications
+
+See [NOTIFICATIONS.md](NOTIFICATIONS.md) for complete notification system documentation.
+
+```bash
+# List all notification channels
+GET /api/notifications/channels
+
+# Create/update notification channel
+POST /api/notifications/channels
+
+# Test notification channel
+POST /api/notifications/test
+
+# Get notification settings
+GET /api/notifications/settings
 ```
 
 ## Development

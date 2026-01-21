@@ -1,10 +1,14 @@
 import { DockerLogCollector } from './docker-collector';
 import { MeilisearchIndexer } from './meilisearch-indexer';
+import { getErrorDetector } from './error-detector';
+import { getNotificationManager } from './notifications/apprise-manager';
 import { env } from '$env/dynamic/private';
 
 export class LogAggregatorService {
 	private collector: DockerLogCollector | null = null;
 	private indexer: MeilisearchIndexer | null = null;
+	private errorDetector = getErrorDetector();
+	private notificationManager = getNotificationManager();
 	private isRunning = false;
 
 	async start(): Promise<void> {
@@ -23,11 +27,37 @@ export class LogAggregatorService {
 			this.indexer = new MeilisearchIndexer(meilisearchHost, meilisearchKey);
 			await this.indexer.initialize();
 
-			// Docker Log Collector initialisieren
+			// Docker Log Collector initialisieren mit Error Detection
 			const labelFilter = env.DOCKER_LABEL_FILTER || 'loggator.enable=true';
 			this.collector = new DockerLogCollector(labelFilter, async (log) => {
+				// Log indexieren
 				if (this.indexer) {
 					await this.indexer.indexLog(log);
+				}
+
+				// Error Detection
+				const detectedError = this.errorDetector.detectError(log);
+				if (detectedError) {
+					const shouldNotify = this.errorDetector.addError(detectedError);
+
+					if (shouldNotify) {
+						// Hole alle Errors für diesen Container und Severity
+						const recentErrors = this.errorDetector.getRecentErrors(
+							log.containerId,
+							detectedError.severity
+						);
+
+						// Sende Benachrichtigung asynchron (blockiert nicht)
+						this.notificationManager
+							.notifyErrors(recentErrors)
+							.catch((error) => {
+								console.error('Error sending notification:', error);
+							})
+							.finally(() => {
+								// Bereinige Errors nach Benachrichtigung
+								this.errorDetector.clearErrors(log.containerId, detectedError.severity);
+							});
+					}
 				}
 			});
 
@@ -35,6 +65,7 @@ export class LogAggregatorService {
 
 			this.isRunning = true;
 			console.log('Log Aggregator Service started successfully');
+			console.log('Error detection and notifications enabled');
 		} catch (error) {
 			console.error('Error starting service:', error);
 			await this.stop();

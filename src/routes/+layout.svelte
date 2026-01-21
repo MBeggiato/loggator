@@ -5,6 +5,7 @@
 		Search,
 		Container,
 		Activity,
+		Bell,
 		ChevronLeft,
 		ChevronRight,
 		Github,
@@ -42,7 +43,8 @@
 		{ href: '/', labelKey: 'overview' as const, icon: LayoutDashboard },
 		{ href: '/containers', labelKey: 'containers' as const, icon: Container },
 		{ href: '/search', labelKey: 'logSearch' as const, icon: Search },
-		{ href: '/live', labelKey: 'liveLogs' as const, icon: Activity }
+		{ href: '/live', labelKey: 'liveLogs' as const, icon: Activity },
+		{ href: '/notifications', labelKey: 'notifications' as const, icon: Bell }
 	];
 
 	const GITHUB_REPO = 'https://github.com/MBeggiato/loggator';

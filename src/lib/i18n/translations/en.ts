@@ -25,6 +25,7 @@ export default {
 		containers: 'Containers',
 		logSearch: 'Log Search',
 		liveLogs: 'Live Logs',
+		notifications: 'Notifications',
 		collapse: 'Collapse',
 		expand: 'Expand'
 	},
