@@ -16,6 +16,23 @@ services:
       retries: 5
     restart: unless-stopped
 
+  apprise:
+    image: caronc/apprise:latest
+    container_name: loggator-apprise-dev
+    ports:
+      - '8000:8000'
+    environment:
+      - APPRISE_STATELESS_URLS=Yes
+    volumes:
+      - ./apprise-data:/config
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:8000/ || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
   test-logger:
     image: alpine:latest
     container_name: loggator-test-logger-dev
