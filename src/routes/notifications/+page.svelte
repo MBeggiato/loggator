@@ -65,10 +65,14 @@
 		}
 	}
 
+	function generateId(): string {
+		return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+	}
+
 	async function saveChannel() {
 		try {
 			const channel: Omit<AppriseChannel, 'createdAt' | 'updatedAt'> = {
-				id: editingId || crypto.randomUUID(),
+				id: editingId || generateId(),
 				name: formData.name,
 				url: formData.url,
 				enabled: formData.enabled,
