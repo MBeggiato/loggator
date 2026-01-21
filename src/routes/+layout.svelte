@@ -18,6 +18,7 @@
 		Separator,
 		Tooltip,
 		TooltipContent,
+		TooltipProvider,
 		TooltipTrigger,
 		DropdownMenu,
 		DropdownMenuContent,
@@ -105,160 +106,162 @@
 
 <div class="dark">
 	<Toaster richColors position="top-right" />
-	<div class="flex h-screen bg-background">
-		<!-- Sidebar -->
-		<aside
-			class="flex flex-col border-r bg-sidebar transition-all duration-300 {collapsed
-				? 'w-16'
-				: 'w-64'}"
-		>
-			<!-- Logo -->
-			<div class="flex h-16 items-center gap-3 border-b px-4">
-				<img src={logo} alt="Loggator Logo" class="h-10 w-10 shrink-0 rounded-lg" />
-				{#if !collapsed}
-					<span class="font-semibold text-sidebar-foreground">Loggator</span>
-				{/if}
-			</div>
-
-			<!-- Navigation -->
-			<nav class="flex-1 space-y-1 p-2">
-				{#each navItems as item}
-					{@const isActive = $page.url.pathname === item.href}
-					{@const label = $t.nav[item.labelKey]}
-					<a
-						href={item.href}
-						class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors
-							{isActive
-							? 'bg-sidebar-accent text-sidebar-accent-foreground'
-							: 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'}"
-						title={collapsed ? label : undefined}
-					>
-						<item.icon class="h-4 w-4 shrink-0" />
-						{#if !collapsed}
-							<span>{label}</span>
-						{/if}
-					</a>
-				{/each}
-			</nav>
-
-			<Separator />
-
-			<!-- Collapse button -->
-			<div class="p-2">
-				<Button
-					variant="ghost"
-					size={collapsed ? 'icon' : 'default'}
-					class="w-full justify-center"
-					onclick={() => (collapsed = !collapsed)}
-				>
-					{#if collapsed}
-						<ChevronRight class="h-4 w-4" />
-					{:else}
-						<ChevronLeft class="h-4 w-4" />
-						<span>{$t.nav.collapse}</span>
-					{/if}
-				</Button>
-			</div>
-
-			<!-- Footer: Version, Language & GitHub -->
-			<div class="border-t px-3 py-3 space-y-2">
-				<!-- Version with Update indicator -->
-				<div class="flex items-center justify-center gap-2">
-					{#if collapsed}
-						{#if updateAvailable}
-							<Tooltip>
-								<TooltipTrigger>
-									<a
-										href="{GITHUB_REPO}/tags"
-										target="_blank"
-										rel="noopener noreferrer"
-										class="flex items-center text-amber-500 hover:text-amber-400 transition-colors"
-									>
-										<Info class="h-4 w-4" />
-									</a>
-								</TooltipTrigger>
-								<TooltipContent side="right">
-									<p>{$t.common.updateAvailable}: v{latestVersion}</p>
-								</TooltipContent>
-							</Tooltip>
-						{:else}
-							<span class="text-xs text-muted-foreground">v{version}</span>
-						{/if}
-					{:else}
-						<span class="text-xs text-muted-foreground">{$t.common.version} {version}</span>
-						{#if updateAvailable}
-							<Tooltip>
-								<TooltipTrigger>
-									<a
-										href="{GITHUB_REPO}/tags"
-										target="_blank"
-										rel="noopener noreferrer"
-										class="flex items-center text-amber-500 hover:text-amber-400 transition-colors"
-									>
-										<Info class="h-4 w-4" />
-									</a>
-								</TooltipTrigger>
-								<TooltipContent>
-									<p>{$t.common.updateAvailable}: v{latestVersion}</p>
-								</TooltipContent>
-							</Tooltip>
-						{/if}
+	<TooltipProvider>
+		<div class="flex h-screen bg-background">
+			<!-- Sidebar -->
+			<aside
+				class="flex flex-col border-r bg-sidebar transition-all duration-300 {collapsed
+					? 'w-16'
+					: 'w-64'}"
+			>
+				<!-- Logo -->
+				<div class="flex h-16 items-center gap-3 border-b px-4">
+					<img src={logo} alt="Loggator Logo" class="h-10 w-10 shrink-0 rounded-lg" />
+					{#if !collapsed}
+						<span class="font-semibold text-sidebar-foreground">Loggator</span>
 					{/if}
 				</div>
 
-				<!-- Language Selector -->
-				<DropdownMenu>
-					<DropdownMenuTrigger>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								variant="ghost"
-								size={collapsed ? 'icon' : 'sm'}
-								class="w-full justify-center gap-2"
-							>
-								<Languages class="h-4 w-4" />
-								{#if !collapsed}
-									<span class="text-xs"
-										>{availableLocales.find((l) => l.code === $locale)?.flag}
-										{availableLocales.find((l) => l.code === $locale)?.name}</span
-									>
-								{/if}
-							</Button>
-						{/snippet}
-					</DropdownMenuTrigger>
-					<DropdownMenuContent side={collapsed ? 'right' : 'top'} align="center">
-						{#each availableLocales as loc}
-							<DropdownMenuItem
-								onclick={() => setLocale(loc.code)}
-								class="gap-2 {$locale === loc.code ? 'bg-accent' : ''}"
-							>
-								<span>{loc.flag}</span>
-								<span>{loc.name}</span>
-							</DropdownMenuItem>
-						{/each}
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<!-- Navigation -->
+				<nav class="flex-1 space-y-1 p-2">
+					{#each navItems as item}
+						{@const isActive = $page.url.pathname === item.href}
+						{@const label = $t.nav[item.labelKey]}
+						<a
+							href={item.href}
+							class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors
+							{isActive
+								? 'bg-sidebar-accent text-sidebar-accent-foreground'
+								: 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'}"
+							title={collapsed ? label : undefined}
+						>
+							<item.icon class="h-4 w-4 shrink-0" />
+							{#if !collapsed}
+								<span>{label}</span>
+							{/if}
+						</a>
+					{/each}
+				</nav>
 
-				<!-- GitHub Link -->
-				<a
-					href={GITHUB_REPO}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
-					title={collapsed ? 'GitHub Repository' : undefined}
-				>
-					<Github class="h-4 w-4 shrink-0" />
-					{#if !collapsed}
-						<span>GitHub</span>
-						<ExternalLink class="h-3 w-3" />
-					{/if}
-				</a>
-			</div>
-		</aside>
+				<Separator />
 
-		<!-- Main content -->
-		<main class="flex-1 overflow-auto">
-			{@render children()}
-		</main>
-	</div>
+				<!-- Collapse button -->
+				<div class="p-2">
+					<Button
+						variant="ghost"
+						size={collapsed ? 'icon' : 'default'}
+						class="w-full justify-center"
+						onclick={() => (collapsed = !collapsed)}
+					>
+						{#if collapsed}
+							<ChevronRight class="h-4 w-4" />
+						{:else}
+							<ChevronLeft class="h-4 w-4" />
+							<span>{$t.nav.collapse}</span>
+						{/if}
+					</Button>
+				</div>
+
+				<!-- Footer: Version, Language & GitHub -->
+				<div class="border-t px-3 py-3 space-y-2">
+					<!-- Version with Update indicator -->
+					<div class="flex items-center justify-center gap-2">
+						{#if collapsed}
+							{#if updateAvailable}
+								<Tooltip>
+									<TooltipTrigger>
+										<a
+											href="{GITHUB_REPO}/tags"
+											target="_blank"
+											rel="noopener noreferrer"
+											class="flex items-center text-amber-500 hover:text-amber-400 transition-colors"
+										>
+											<Info class="h-4 w-4" />
+										</a>
+									</TooltipTrigger>
+									<TooltipContent side="right">
+										<p>{$t.common.updateAvailable}: v{latestVersion}</p>
+									</TooltipContent>
+								</Tooltip>
+							{:else}
+								<span class="text-xs text-muted-foreground">v{version}</span>
+							{/if}
+						{:else}
+							<span class="text-xs text-muted-foreground">{$t.common.version} {version}</span>
+							{#if updateAvailable}
+								<Tooltip>
+									<TooltipTrigger>
+										<a
+											href="{GITHUB_REPO}/tags"
+											target="_blank"
+											rel="noopener noreferrer"
+											class="flex items-center text-amber-500 hover:text-amber-400 transition-colors"
+										>
+											<Info class="h-4 w-4" />
+										</a>
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>{$t.common.updateAvailable}: v{latestVersion}</p>
+									</TooltipContent>
+								</Tooltip>
+							{/if}
+						{/if}
+					</div>
+
+					<!-- Language Selector -->
+					<DropdownMenu>
+						<DropdownMenuTrigger>
+							{#snippet child({ props })}
+								<Button
+									{...props}
+									variant="ghost"
+									size={collapsed ? 'icon' : 'sm'}
+									class="w-full justify-center gap-2"
+								>
+									<Languages class="h-4 w-4" />
+									{#if !collapsed}
+										<span class="text-xs"
+											>{availableLocales.find((l) => l.code === $locale)?.flag}
+											{availableLocales.find((l) => l.code === $locale)?.name}</span
+										>
+									{/if}
+								</Button>
+							{/snippet}
+						</DropdownMenuTrigger>
+						<DropdownMenuContent side={collapsed ? 'right' : 'top'} align="center">
+							{#each availableLocales as loc}
+								<DropdownMenuItem
+									onclick={() => setLocale(loc.code)}
+									class="gap-2 {$locale === loc.code ? 'bg-accent' : ''}"
+								>
+									<span>{loc.flag}</span>
+									<span>{loc.name}</span>
+								</DropdownMenuItem>
+							{/each}
+						</DropdownMenuContent>
+					</DropdownMenu>
+
+					<!-- GitHub Link -->
+					<a
+						href={GITHUB_REPO}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
+						title={collapsed ? 'GitHub Repository' : undefined}
+					>
+						<Github class="h-4 w-4 shrink-0" />
+						{#if !collapsed}
+							<span>GitHub</span>
+							<ExternalLink class="h-3 w-3" />
+						{/if}
+					</a>
+				</div>
+			</aside>
+
+			<!-- Main content -->
+			<main class="flex-1 overflow-auto">
+				{@render children()}
+			</main>
+		</div>
+	</TooltipProvider>
 </div>
